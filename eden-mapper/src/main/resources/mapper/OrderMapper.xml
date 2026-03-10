@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.Order">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="pay_amount" property="payAmount"/>
+        <result column="freight_amount" property="freightAmount"/>
+        <result column="discount_amount" property="discountAmount"/>
+        <result column="coupon_id" property="couponId"/>
+        <result column="pay_type" property="payType"/>
+        <result column="status" property="status"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="receiver_address" property="receiverAddress"/>
+        <result column="remark" property="remark"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="ship_time" property="shipTime"/>
+        <result column="receive_time" property="receiveTime"/>
+        <result column="complete_time" property="completeTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id, pay_type, status,
+        receiver_name, receiver_phone, receiver_address, remark, pay_time, ship_time, receive_time, complete_time, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE order_no = #{orderNo}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM `order`
+        WHERE user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="selectUnpaidTimeout" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE status = 0 AND create_time &lt; DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE)
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `order` (order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id,
+                            pay_type, status, receiver_name, receiver_phone, receiver_address, remark, create_time, update_time)
+        VALUES (#{orderNo}, #{userId}, #{totalAmount}, #{payAmount}, #{freightAmount}, #{discountAmount}, #{couponId},
+                #{payType}, #{status}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE `order`
+        <set>
+            <if test="payType != null">pay_type = #{payType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="shipTime != null">ship_time = #{shipTime},</if>
+            <if test="receiveTime != null">receive_time = #{receiveTime},</if>
+            <if test="completeTime != null">complete_time = #{completeTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE `order` SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="cancel">
+        UPDATE `order` SET status = 5, update_time = NOW() WHERE id = #{id} AND status = 0
+    </update>
+
+    <update id="pay">
+        UPDATE `order` SET status = 1, pay_type = #{payType}, pay_time = NOW(), update_time = NOW()
+        WHERE id = #{id} AND status = 0
+    </update>
+
+    <select id="sumPayAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(pay_amount), 0)
+        FROM `order`
+        WHERE status IN (1, 2, 3, 4)
+        <if test="startDate != null">
+            AND create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+    </select>
+
+    <select id="selectTimeoutOrders" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE status = #{status}
+          AND create_time &lt; #{timeoutTime}
+    </select>
+
+    <select id="selectByStatusAndShippedBefore" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE status = #{status}
+          AND ship_time &lt; #{shippedBefore}
+    </select>
+
+    <update id="updateById" parameterType="eden.pojo.Order">
+        UPDATE `order`
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="shipTime != null">ship_time = #{shipTime},</if>
+            <if test="receiveTime != null">receive_time = #{receiveTime},</if>
+            <if test="completeTime != null">complete_time = #{completeTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

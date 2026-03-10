@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.ProductMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.Product">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="subtitle" property="subtitle"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="main_image" property="mainImage"/>
+        <result column="sub_images" property="subImages"/>
+        <result column="detail" property="detail"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="sales" property="sales"/>
+        <result column="status" property="status"/>
+        <result column="is_hot" property="isHot"/>
+        <result column="is_new" property="isNew"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, subtitle, category_id, main_image, sub_images, detail, original_price, price, stock, sales, status, is_hot, is_new, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        <where>
+            status = 1
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR subtitle LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="minPrice != null">
+                AND price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND price &lt;= #{maxPrice}
+            </if>
+        </where>
+        <choose>
+            <when test="sortField == 'price'">
+                ORDER BY price <if test="sortOrder == 'desc'">DESC</if><if test="sortOrder != 'desc'">ASC</if>
+            </when>
+            <when test="sortField == 'sales'">
+                ORDER BY sales DESC
+            </when>
+            <when test="sortField == 'new'">
+                ORDER BY create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM product
+        <where>
+            status = 1
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR subtitle LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="minPrice != null">
+                AND price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND price &lt;= #{maxPrice}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectHotProducts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        WHERE status = 1 AND is_hot = 1
+        ORDER BY sales DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectNewProducts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        WHERE status = 1 AND is_new = 1
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectByCategoryId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        WHERE category_id = #{categoryId} AND status = 1
+        ORDER BY id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (name, subtitle, category_id, main_image, sub_images, detail, original_price, price, stock, sales, status, is_hot, is_new, create_time, update_time)
+        VALUES (#{name}, #{subtitle}, #{categoryId}, #{mainImage}, #{subImages}, #{detail}, #{originalPrice}, #{price}, #{stock}, #{sales}, #{status}, #{isHot}, #{isNew}, NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE product
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="subtitle != null">subtitle = #{subtitle},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="mainImage != null">main_image = #{mainImage},</if>
+            <if test="subImages != null">sub_images = #{subImages},</if>
+            <if test="detail != null">detail = #{detail},</if>
+            <if test="originalPrice != null">original_price = #{originalPrice},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="isHot != null">is_hot = #{isHot},</if>
+            <if test="isNew != null">is_new = #{isNew},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM product WHERE id = #{id}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE product SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="decreaseStock">
+        UPDATE product SET stock = stock - #{quantity}, update_time = NOW()
+        WHERE id = #{id} AND stock >= #{quantity}
+    </update>
+
+    <update id="increaseStock">
+        UPDATE product SET stock = stock + #{quantity}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="increaseSales">
+        UPDATE product SET sales = sales + #{quantity}, update_time = NOW() WHERE id = #{id}
+    </update>
+</mapper>

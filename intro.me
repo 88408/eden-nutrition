@@ -1,0 +1,84 @@
+实体类（13个）：
+
+文件	说明
+User.java	用户
+UserAddress.java	收货地址
+Category.java	商品分类
+Product.java	商品
+ProductReview.java	商品评价
+Order.java	订单
+OrderItem.java	订单明细
+Coupon.java	优惠券
+UserCoupon.java	用户优惠券
+SeckillProduct.java	秒杀商品
+SeckillOrder.java	秒杀订单
+CartItem.java	购物车项
+OperationLog.java	操作日志
+
+DTO（7个）：
+
+文件	说明
+LoginDTO.java	登录请求
+RegisterDTO.java	注册请求
+CartDTO.java	购物车操作
+OrderCreateDTO.java	创建订单
+SeckillDTO.java	秒杀请求
+PageDTO.java	分页查询
+ProductQueryDTO.java	商品查询
+
+VO（6个）：
+
+文件	说明
+UserVO.java	用户信息
+LoginVO.java	登录响应
+CartVO.java	购物车
+CartItemVO.java	购物车项
+PageVO.java	分页结果
+CategoryTreeVO.java	分类树
+
+Mapper 接口（12个）
+
+文件	功能
+UserMapper.java	用户CRUD、登录查询、状态更新
+UserAddressMapper.java	收货地址管理、默认地址设置
+CategoryMapper.java	分类树查询、层级管理
+ProductMapper.java	商品条件查询、库存操作、销量统计
+OrderMapper.java	订单CRUD、状态流转、超时订单处理
+OrderItemMapper.java	订单明细批量插入、查询
+CouponMapper.java	优惠券管理、数量扣减
+UserCouponMapper.java	用户优惠券领取、使用、过期处理
+SeckillProductMapper.java	秒杀商品管理、库存扣减
+SeckillOrderMapper.java	秒杀订单防重复
+ProductReviewMapper.java	商品评价管理、评分计算
+OperationLogMapper.java	操作日志记录
+MyBatis XML 映射文件（12个）
+所有 Mapper 接口对应的 XML 文件已创建，包含完整的 SQL 语句。
+
+Common 模块
+
+类别	文件	功能
+响应封装	Result.java	统一响应结果
+状态码	ResultCode.java	业务状态码枚举
+异常处理	BusinessException.java	业务异常类
+异常处理	GlobalExceptionHandler.java	全局异常处理器
+工具类	JwtUtils.java	JWT 生成/解析
+工具类	JsonUtils.java	JSON 序列化
+工具类	RedisUtils.java	Redis 操作封装
+工具类	IdGenerator.java	订单号/UUID生成
+工具类	ServletUtils.java	HTTP 请求工具
+常量	RedisConstants.java	Redis Key 常量
+常量	OrderConstants.java	订单状态常量
+常量	MQConstants.java	消息队列常量
+
+9个实现类：
+
+文件	功能
+UserServiceImpl	用户注册登录、JWT认证、密码加密、积分管理
+UserAddressServiceImpl	收货地址CRUD、默认地址管理
+CategoryServiceImpl	分类树构建、缓存管理
+ProductServiceImpl	商品查询、库存管理、Redis缓存
+CartServiceImpl	Redis购物车、选中状态管理
+OrderServiceImpl	订单创建、支付、取消、超时处理、MQ消息
+CouponServiceImpl	优惠券领取、使用、分布式锁防并发
+SeckillServiceImpl	秒杀Lua脚本、库存预热、MQ异步
+ProductReviewServiceImpl	商品评价、评分统计

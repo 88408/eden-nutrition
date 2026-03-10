@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.UserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="eden.pojo.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="gender" property="gender"/>
+        <result column="points" property="points"/>
+        <result column="status" property="status"/>
+        <result column="role" property="role"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, username, password, nickname, phone, email, avatar, gender, points, status, role, create_time, update_time
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户名查询 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user
+        WHERE username = #{username}
+    </select>
+
+    <!-- 根据手机号查询 -->
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user
+        WHERE phone = #{phone}
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, nickname, phone, email, avatar, gender, points, status, role, create_time, update_time)
+        VALUES (#{username}, #{password}, #{nickname}, #{phone}, #{email}, #{avatar}, #{gender}, #{points}, #{status}, #{role}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新用户 -->
+    <update id="update">
+        UPDATE user
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="password != null">password = #{password},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新积分 -->
+    <update id="updatePoints">
+        UPDATE user SET points = #{points}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 更新状态 -->
+    <update id="updateStatus">
+        UPDATE user SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 分页查询列表 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM user
+    </select>
+</mapper>

@@ -1,0 +1,31 @@
+-- ============================================
+-- Eden Nutrition 一键初始化脚本
+-- 按顺序执行所有 SQL 文件
+-- ============================================
+
+-- 使用方法:
+-- 方式1: 在 MySQL 客户端中依次执行各文件
+-- 方式2: 使用 source 命令执行本文件（需要调整路径）
+
+-- 执行顺序:
+-- 1. 01-init-database.sql  - 创建数据库
+-- 2. 02-user.sql           - 用户模块
+-- 3. 03-product.sql        - 商品模块
+-- 4. 04-order.sql          - 订单模块
+-- 5. 05-promotion.sql      - 促销模块
+-- 6. 06-system.sql         - 系统模块
+-- 7. 07-init-data.sql      - 初始化数据
+
+-- 如果使用 Docker，可以用以下命令批量执行:
+-- 
+-- Windows PowerShell:
+-- Get-ChildItem -Path "sql" -Filter "*.sql" | Sort-Object Name | ForEach-Object { Get-Content $_.FullName } | docker exec -i eden-mysql mysql -u root -prootpass
+--
+-- 或者逐个执行:
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/01-init-database.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/02-user.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/03-product.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/04-order.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/05-promotion.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/06-system.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/07-init-data.sql

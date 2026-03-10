@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.OperationLogMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.OperationLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="operation" property="operation"/>
+        <result column="method" property="method"/>
+        <result column="params" property="params"/>
+        <result column="ip" property="ip"/>
+        <result column="duration" property="duration"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, username, operation, method, params, ip, duration, create_time
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_log (user_id, username, operation, method, params, ip, duration, create_time)
+        VALUES (#{userId}, #{username}, #{operation}, #{method}, #{params}, #{ip}, #{duration}, NOW())
+    </insert>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM operation_log
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*)
+        FROM operation_log
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteBeforeDate">
+        DELETE FROM operation_log WHERE create_time &lt; #{date}
+    </delete>
+</mapper>

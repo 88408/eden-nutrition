@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.ProductReviewMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.ProductReview">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="user_id" property="userId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="rating" property="rating"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="is_anonymous" property="isAnonymous"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, product_id, user_id, order_id, rating, content, images, is_anonymous, status, create_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product_review
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByProductId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product_review
+        WHERE product_id = #{productId} AND status = 1
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByProductId" resultType="long">
+        SELECT COUNT(*)
+        FROM product_review
+        WHERE product_id = #{productId} AND status = 1
+    </select>
+
+    <select id="avgRatingByProductId" resultType="java.lang.Double">
+        SELECT AVG(rating)
+        FROM product_review
+        WHERE product_id = #{productId} AND status = 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_review (product_id, user_id, order_id, rating, content, images, is_anonymous, status, create_time)
+        VALUES (#{productId}, #{userId}, #{orderId}, #{rating}, #{content}, #{images}, #{isAnonymous}, #{status}, NOW())
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE product_review SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM product_review WHERE id = #{id}
+    </delete>
+</mapper>

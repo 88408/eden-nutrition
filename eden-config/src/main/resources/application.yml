@@ -1,0 +1,130 @@
+# ============================================
+# Eden Nutrition 应用配置
+# ============================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: eden-nutrition
+  profiles:
+    active: dev
+
+  # 修复 Springfox Swagger 与 Spring Boot 2.6+ 兼容性问题
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3307/eden_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: eden
+    password: edenpass
+    # HikariCP 连接池
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: EdenHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  # Redis 配置
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+  # RabbitMQ 配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: user
+    password: password
+    virtual-host: /
+    # 消息确认
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+
+  # Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+
+  # 文件上传
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: eden.pojo
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Elasticsearch 配置
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
+
+# JWT 配置
+jwt:
+  secret: EdenNutritionSecretKey2024VeryLongAndSecure
+  expiration: 86400000  # 24小时（毫秒）
+  token-header: Authorization
+  token-prefix: "Bearer "
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    eden: DEBUG
+    org.springframework.web: INFO
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Swagger 配置
+swagger:
+  enabled: true
+  title: Eden Nutrition API
+  description: 伊甸滋补线上商店 API 文档
+  version: 1.0.0
+  base-package: eden.controller
+
+# 自定义配置
+eden:
+  # 购物车配置
+  cart:
+    redis-prefix: "cart:"
+    expire-days: 30
+  # 订单配置
+  order:
+    pay-timeout-minutes: 30
+    no-prefix: "EN"
+  # 秒杀配置
+  seckill:
+    redis-prefix: "seckill:"
+    stock-prefix: "seckill:stock:"
