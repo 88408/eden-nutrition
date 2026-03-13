@@ -3,6 +3,7 @@ package eden.web.controller;
 import eden.common.result.Result;
 import eden.pojo.SeckillProduct;
 import eden.pojo.dto.SeckillDTO;
+import eden.pojo.dto.SeckillSessionDTO;
 import eden.service.SeckillService;
 import eden.web.annotation.CurrentUser;
 import eden.web.annotation.RequireLogin;
@@ -21,8 +22,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/seckill")
 public class SeckillController {
-
-import eden.pojo.dto.SeckillSessionDTO;
 
     @Autowired
     private SeckillService seckillService;
