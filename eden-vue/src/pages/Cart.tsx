@@ -17,17 +17,8 @@ const Cart = () => {
     const fetchCart = async () => {
       setLoading(true);
       try {
-        // Mock API
-        // const res = await getCart();
-        // dispatch(setCartItems(res.data));
-        
-        // Mock Data
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const mockItems: CartItem[] = [
-          { productId: 1, productName: '有机乳清蛋白粉', price: 49.99, quantity: 1, imageUrl: 'https://picsum.photos/seed/whey/200/200', selected: true },
-          { productId: 2, productName: '复合维生素', price: 29.99, quantity: 2, imageUrl: 'https://picsum.photos/seed/vitamin/200/200', selected: true },
-        ];
-        dispatch(setCartItems(mockItems));
+        const res = await getCart();
+        dispatch(setCartItems(res));
       } catch (error) {
         console.error(error);
       } finally {
@@ -41,16 +32,10 @@ const Cart = () => {
   const handleUpdateQuantity = async (productId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      // Mock API
-      // await updateCartItem({ productId, quantity: newQuantity });
-      // const res = await getCart();
-      // dispatch(setCartItems(res.data));
-      
-      // Mock Redux Update
-      const updatedItems = items.map(item => 
-        item.productId === productId ? { ...item, quantity: newQuantity } : item
-      );
-      dispatch(setCartItems(updatedItems));
+      await updateCartItem({ productId, quantity: newQuantity });
+      // Refresh cart to ensure consistency
+      const res = await getCart();
+      dispatch(setCartItems(res));
     } catch (error) {
       console.error(error);
     }
@@ -58,14 +43,9 @@ const Cart = () => {
 
   const handleRemoveItem = async (productId: number) => {
     try {
-      // Mock API
-      // await removeCartItem(productId);
-      // const res = await getCart();
-      // dispatch(setCartItems(res.data));
-      
-      // Mock Redux Update
-      const updatedItems = items.filter(item => item.productId !== productId);
-      dispatch(setCartItems(updatedItems));
+      await removeCartItem(productId);
+      const res = await getCart();
+      dispatch(setCartItems(res));
     } catch (error) {
       console.error(error);
     }

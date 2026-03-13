@@ -14,14 +14,16 @@ const initialState: ProductState = {
   error: null,
 };
 
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
-  return await productApi.getProducts();
+export const fetchProducts = createAsyncThunk('products/fetchProducts', async (params?: { pageNum?: number; pageSize?: number }) => {
+  // Default to fetching a large number for admin list view without proper pagination UI yet
+  const effectiveParams = { pageSize: 100, ...params };
+  return await productApi.getProducts(effectiveParams);
 });
 
 export const addNewProduct = createAsyncThunk('products/addNewProduct', async (initialProduct: Omit<Product, 'id'>) => {
   // Backend returns void, so we fetch all products again
   await productApi.createProduct(initialProduct);
-  return await productApi.getProducts();
+  return await productApi.getProducts({ pageSize: 100 });
 });
 
 export const updateExistingProduct = createAsyncThunk('products/updateProduct', async (product: Product) => {

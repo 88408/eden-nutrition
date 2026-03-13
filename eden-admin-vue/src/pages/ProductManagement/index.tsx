@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import { fetchProducts, addNewProduct, updateExistingProduct, removeProduct } from '../../store/slices/productSlice';
-import { Product } from '../../types';
+import { Product, Category } from '../../types';
+import { getCategories } from '../../api/category';
 import { 
   Plus, 
   Search, 
@@ -13,22 +14,26 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const categories = [
-  { id: 1, name: '蛋白粉' },
-  { id: 2, name: '维生素/矿物质' },
-  { id: 3, name: '睡眠辅助' },
-];
 
 export default function ProductManagement() {
   const dispatch = useDispatch<AppDispatch>();
   const products = useSelector((state: RootState) => state.products.items);
   const status = useSelector((state: RootState) => state.products.status);
 
+  const [categories, setCategories] = useState<Category[]>([]);
+
   useEffect(() => {
     if (status === 'idle') {
       dispatch(fetchProducts());
     }
   }, [status, dispatch]);
+
+  useEffect(() => {
+    getCategories().then(list => setCategories(list)).catch(err => {
+        // toast.error('Could not load categories'); // Suppress error for now as backend might be down
+        console.error(err);
+    });
+  }, []);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | ''>('');
@@ -66,7 +71,7 @@ export default function ProductManagement() {
         price: 0,
         stock: 0,
         imageUrl: '',
-        categoryId: 1,
+        categoryId: categories.length > 0 ? categories[0].id : 1, // Default to first category if available
         status: 1,
         isHot: 0,
         isNew: 0,

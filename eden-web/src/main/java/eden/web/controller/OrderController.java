@@ -80,4 +80,29 @@ public class OrderController {
         orderService.deleteOrder(userId, orderNo);
         return Result.success();
     }
+
+    @ApiOperation("管理员查询订单")
+    @GetMapping("/admin/list")
+    public Result<PageVO<Order>> queryOrders(
+            @ApiParam("订单号") @RequestParam(required = false) String orderNo,
+            @ApiParam("订单状态") @RequestParam(required = false) Integer status,
+            @ApiParam("页码") @RequestParam(defaultValue = "1") Integer pageNum,
+            @ApiParam("每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        
+        eden.pojo.dto.OrderQueryDTO queryDTO = new eden.pojo.dto.OrderQueryDTO();
+        queryDTO.setOrderNo(orderNo);
+        queryDTO.setStatus(status);
+        queryDTO.setPageNum(pageNum);
+        queryDTO.setPageSize(pageSize);
+
+        PageVO<Order> page = orderService.queryOrders(queryDTO);
+        return Result.success(page);
+    }
+
+    @ApiOperation("订单发货")
+    @PostMapping("/admin/ship/{orderNo}")
+    public Result<Void> shipOrder(@PathVariable String orderNo) {
+        orderService.shipOrder(orderNo);
+        return Result.success();
+    }
 }

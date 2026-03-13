@@ -48,4 +48,10 @@ public interface SeckillService {
      * 初始化秒杀库存到Redis
      */
     void initSeckillStock();
+
+    /**
+     * 获取秒杀场次列表
+     */
+    List<eden.pojo.dto.SeckillSessionDTO> getSeckillSessions();
+}
 }

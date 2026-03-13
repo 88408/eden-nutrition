@@ -367,4 +367,48 @@ public class OrderServiceImpl implements OrderService {
         // 软删除（这里简单处理，实际可以添加delete_flag字段）
         orderMapper.updateStatus(order.getId(), -1);
     }
+
+    @Override
+    public PageVO<Order> queryOrders(eden.pojo.dto.OrderQueryDTO queryDTO) {
+        if (queryDTO.getPageNum() == null || queryDTO.getPageNum() < 1) {
+            queryDTO.setPageNum(1);
+        }
+        if (queryDTO.getPageSize() == null || queryDTO.getPageSize() < 1) {
+            queryDTO.setPageSize(10);
+        }
+        
+        int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
+        queryDTO.setOffset(offset);
+
+        List<Order> list = orderMapper.selectByCondition(queryDTO);
+        long total = orderMapper.countByCondition(queryDTO);
+
+        if (list != null && !list.isEmpty()) {
+            for (Order order : list) {
+                // 暂时简单循环查询，实际可以用IN查询优化
+                List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
+                order.setOrderItems(items);
+            }
+        }
+
+        return PageVO.of(list, total, queryDTO.getPageNum(), queryDTO.getPageSize());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void shipOrder(String orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
+        }
+        if (order.getStatus() != OrderConstants.STATUS_PAID) {
+            throw new BusinessException("订单状态不正确，无法发货");
+        }
+        
+        Order updateOrder = new Order();
+        updateOrder.setId(order.getId());
+        updateOrder.setStatus(OrderConstants.STATUS_SHIPPED);
+        updateOrder.setShipTime(LocalDateTime.now());
+        orderMapper.update(updateOrder);
+    }
 }

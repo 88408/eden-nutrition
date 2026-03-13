@@ -47,6 +47,16 @@ public interface OrderMapper {
     List<Order> selectByStatusAndShippedBefore(@Param("status") Integer status, @Param("shippedBefore") LocalDateTime shippedBefore);
 
     /**
+     * 条件查询订单列表
+     */
+    List<Order> selectByCondition(eden.pojo.dto.OrderQueryDTO queryDTO);
+
+    /**
+     * 条件统计订单数
+     */
+    long countByCondition(eden.pojo.dto.OrderQueryDTO queryDTO);
+
+    /**
      * 根据ID更新订单
      */
     int updateById(Order order);

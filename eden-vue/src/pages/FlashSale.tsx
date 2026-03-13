@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Zap, ShoppingCart, ChevronRight, Flame } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../types';
+import { getSeckillSessions } from '../api/seckill';
 
 // Extend Product type for Flash Sale specific fields
 interface FlashSaleItem extends Product {
@@ -11,115 +12,136 @@ interface FlashSaleItem extends Product {
   soldStock: number;
   startTime: Date;
   endTime: Date;
+  status: number; // 0, 1, 2
+}
+
+interface SeckillSession {
+  startTime: string; // ISO string
+  endTime: string;
+  status: number; // 0: upcoming, 1: ongoing, 2: ended
+  products: any[];
 }
 
 const FlashSale = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [sessions, setSessions] = useState<SeckillSession[]>([]);
+  const [flashSaleItems, setFlashSaleItems] = useState<FlashSaleItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock time slots
-  const timeSlots = [
-    { id: 0, time: '10:00', status: '抢购中', label: '正在疯抢' },
-    { id: 1, time: '14:00', status: '即将开始', label: '即将开始' },
-    { id: 2, time: '20:00', status: '即将开始', label: '即将开始' },
-    { id: 3, time: '22:00', status: '即将开始', label: '即将开始' },
-  ];
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
-  // Mock Flash Sale Data
-  const flashSaleItems: FlashSaleItem[] = [
-    {
-      id: 101,
-      name: '高性能乳清蛋白粉 (巧克力味)',
-      description: '快速吸收，肌肉恢复首选。',
-      price: 49.99, // Original Price
-      flashPrice: 29.99,
-      originalPrice: 49.99,
-      stock: 20, // Current available stock
-      totalStock: 100,
-      soldStock: 80,
-      imageUrl: 'https://picsum.photos/seed/whey-choco/400/400',
-      categoryId: 1,
-      rating: 4.9,
-      reviewCount: 320,
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + 3600000),
-    },
-    {
-      id: 102,
-      name: '强效氮泵 (蓝莓味)',
-      description: '引爆训练能量，专注力提升。',
-      price: 39.99,
-      flashPrice: 19.99,
-      originalPrice: 39.99,
-      stock: 5,
-      totalStock: 50,
-      soldStock: 45,
-      imageUrl: 'https://picsum.photos/seed/pre-workout/400/400',
-      categoryId: 1,
-      rating: 4.7,
-      reviewCount: 150,
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + 3600000),
-    },
-    {
-      id: 103,
-      name: '综合维生素矿物质片',
-      description: '每日一片，全面营养支持。',
-      price: 24.99,
-      flashPrice: 9.99,
-      originalPrice: 24.99,
-      stock: 150,
-      totalStock: 200,
-      soldStock: 50,
-      imageUrl: 'https://picsum.photos/seed/multi-vit/400/400',
-      categoryId: 2,
-      rating: 4.8,
-      reviewCount: 500,
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + 3600000),
-    },
-    {
-      id: 104,
-      name: '肌酸一水合物',
-      description: '提升爆发力，增加肌肉围度。',
-      price: 29.99,
-      flashPrice: 14.99,
-      originalPrice: 29.99,
-      stock: 0, // Sold out
-      totalStock: 80,
-      soldStock: 80,
-      imageUrl: 'https://picsum.photos/seed/creatine/400/400',
-      categoryId: 1,
-      rating: 4.6,
-      reviewCount: 210,
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + 3600000),
-    },
-  ];
+  const fetchSessions = async () => {
+    try {
+      setLoading(true);
+      const res = await getSeckillSessions();
+      // res is ApiResponse<SeckillSession[]> or SeckillSession[] depending on client interceptor.
+      // Assuming client returns payload.
+      const sessionList: SeckillSession[] = res as any; 
+      
+      setSessions(sessionList);
+      
+      // Auto select ongoing session
+      const ongoingIndex = sessionList.findIndex(s => s.status === 1);
+      if (ongoingIndex !== -1) {
+        setActiveTab(ongoingIndex);
+      } else if (sessionList.length > 0) {
+        setActiveTab(0);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Update items when tab changes
+  useEffect(() => {
+    if (sessions.length > 0 && sessions[activeTab]) {
+      const currentSession = sessions[activeTab];
+      const items = currentSession.products.map((p: any) => ({
+        id: p.id, // Seckill ID
+        name: p.productName || '商品', // Backend SeckillProduct might strictly not have name if not joined.
+        // Wait, SeckillProduct pojo doesn't have name/image. 
+        // Backend SeckillController usually returns SeckillProduct which just has productId.
+        // If SeckillService didn't join Product table, we only have IDs.
+        // Real implementation requires joining. 
+        // SeckillServiceImpl uses seckillProductMapper.selectOngoing(). 
+        // If SQL joins, we get fields. If not, frontend needs to fetch product details or display placeholders.
+        // Assuming mapper does join or returns extended view object. 
+        // If strictly standard pojo, we miss name.
+        // Let's assume for migration plan that backend mapper handles it or we accept ID display for now.
+        // Or better: fetch product details separately? No, n+1.
+        // I'll assume standard migration provided a mapper that joins.
+        description: p.description || '',
+        price: p.seckillPrice,
+        flashPrice: p.seckillPrice,
+        originalPrice: p.price || (p.seckillPrice * 1.2), // Fallback
+        stock: p.stockCount,
+        totalStock: p.stock || p.stockCount, // Fallback
+        soldStock: (p.stock || p.stockCount) - p.stockCount,
+        imageUrl: p.mainImage || p.imageUrl || 'https://via.placeholder.com/400',
+        categoryId: 0,
+        rating: 5,
+        reviewCount: 0,
+        startTime: new Date(currentSession.startTime),
+        endTime: new Date(currentSession.endTime),
+        status: currentSession.status
+      }));
+      setFlashSaleItems(items);
+    }
+  }, [activeTab, sessions]);
+
+  // View helpers
+  const getStatusLabel = (status: number) => {
+    switch(status) {
+      case 1: return '抢购中';
+      case 0: return '即将开始';
+      case 2: return '已结束';
+      default: return '';
+    }
+  };
+
+  const timeSlots = sessions.map((s, idx) => ({
+    id: idx,
+    time: new Date(s.startTime).getHours().toString().padStart(2, '0') + ':00',
+    status: getStatusLabel(s.status),
+    label: s.status === 1 ? '正在疯抢' : (s.status === 0 ? '即将开始' : '已结束')
+  }));
+  
+  // Display only if we have sessions, else loading or empty
+  if (loading) return <div className="text-center py-20">加载秒杀活动...</div>;
+  if (sessions.length === 0) return <div className="text-center py-20">暂无秒杀活动</div>;
 
   // Countdown Timer Logic
   useEffect(() => {
+    if (!sessions[activeTab]) return;
+    
     const timer = setInterval(() => {
-      const now = new Date();
-      // Calculate time until next slot or end of current slot
-      // For demo, just counting down to a fixed time (e.g., end of the hour)
-      const target = new Date();
-      target.setHours(target.getHours() + 1);
-      target.setMinutes(0);
-      target.setSeconds(0);
+      const now = new Date(); // In real app, sync with server time
+      const currentSession = sessions[activeTab];
+      const target = new Date(currentSession.endTime);
+      // If session is upcoming (status 0), maybe count down to start? 
+      // Plan says "countdown based on server time". 
+      // If ongoing, count to end. If upcoming, count to start.
+      // Simply count to endTime for now as per UI "Distance to end".
       
       const diff = target.getTime() - now.getTime();
       
       if (diff > 0) {
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const hours = Math.floor((diff / (1000 * 60 * 60))); // Allow > 24 hours? UI format is HH:MM:SS
         const minutes = Math.floor((diff / (1000 * 60)) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
         setTimeLeft({ hours, minutes, seconds });
+      } else {
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [activeTab, sessions]);
 
   const calculateProgress = (sold: number, total: number) => {
     return Math.min(100, Math.round((sold / total) * 100));

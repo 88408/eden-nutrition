@@ -22,8 +22,17 @@ import java.util.List;
 @RequestMapping("/seckill")
 public class SeckillController {
 
+import eden.pojo.dto.SeckillSessionDTO;
+
     @Autowired
     private SeckillService seckillService;
+
+    @ApiOperation("获取秒杀场次列表")
+    @GetMapping("/sessions")
+    public Result<List<SeckillSessionDTO>> getSeckillSessions() {
+        List<SeckillSessionDTO> sessions = seckillService.getSeckillSessions();
+        return Result.success(sessions);
+    }
 
     @ApiOperation("获取秒杀活动列表")
     @GetMapping("/list")
@@ -68,5 +77,26 @@ public class SeckillController {
     public Result<Boolean> checkKilled(@CurrentUser Long userId, @PathVariable Long seckillId) {
         boolean killed = seckillService.hasKilled(userId, seckillId);
         return Result.success(killed);
+    }
+
+    @ApiOperation("创建秒杀活动")
+    @PostMapping("/create")
+    public Result<Void> createSeckill(@RequestBody SeckillProduct seckillProduct) {
+        seckillService.add(seckillProduct);
+        return Result.success();
+    }
+
+    @ApiOperation("更新秒杀活动")
+    @PutMapping("/update")
+    public Result<Void> updateSeckill(@RequestBody SeckillProduct seckillProduct) {
+        seckillService.update(seckillProduct);
+        return Result.success();
+    }
+
+    @ApiOperation("发布秒杀活动")
+    @PostMapping("/publish/{id}")
+    public Result<Void> publishSeckill(@PathVariable Long id) {
+        seckillService.initSeckillStock();
+        return Result.success();
     }
 }

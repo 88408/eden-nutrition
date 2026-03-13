@@ -42,3 +42,13 @@ export interface User {
   email: string;
   role: 'USER' | 'ADMIN';
 }
+
+export interface Category {
+    id: number;
+    parentId: number;
+    name: string;
+    level: number;
+    sortOrder: number;
+    status: number;
+}
+

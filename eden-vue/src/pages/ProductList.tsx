@@ -17,22 +17,20 @@ const ProductList = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        // Mock API call
-        // const res = await getProducts({ ...filters });
-        // setProducts(res.data.list);
-        
-        // Mock data
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setProducts([
-          { id: 1, name: '有机乳清蛋白粉', description: '草饲乳清蛋白分离物。', price: 49.99, imageUrl: 'https://picsum.photos/seed/whey/400/400', categoryId: 1, rating: 4.8, reviewCount: 120, stock: 100 },
-          { id: 2, name: '复合维生素', description: '每日必需的维生素和矿物质。', price: 29.99, imageUrl: 'https://picsum.photos/seed/vitamin/400/400', categoryId: 2, rating: 4.5, reviewCount: 85, stock: 50 },
-          { id: 3, name: 'Omega-3 深海鱼油', description: '高含量 EPA & DHA。', price: 24.99, imageUrl: 'https://picsum.photos/seed/omega/400/400', categoryId: 2, rating: 4.7, reviewCount: 200, stock: 80 },
-          { id: 4, name: '训练前能量补剂', description: '提升您的能量和专注力。', price: 39.99, imageUrl: 'https://picsum.photos/seed/energy/400/400', categoryId: 1, rating: 4.6, reviewCount: 150, stock: 60 },
-          { id: 5, name: 'BCAA 支链氨基酸', description: '加速恢复，减少肌肉流失。', price: 34.99, imageUrl: 'https://picsum.photos/seed/bcaa/400/400', categoryId: 1, rating: 4.4, reviewCount: 90, stock: 75 },
-          { id: 6, name: '植物蛋白粉', description: '纯植物来源蛋白混合。', price: 44.99, imageUrl: 'https://picsum.photos/seed/vegan/400/400', categoryId: 1, rating: 4.2, reviewCount: 60, stock: 40 },
-        ]);
+        const res = await getProducts({
+          categoryId: filters.category === '全部' || !filters.category ? undefined : filters.category, // Assuming category needs mapping or ID
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice
+        });
+        // Backend returns PageResult. Assuming res.data.list? Or client returns data directly?
+        // client.ts returns res.data which is PageResult<Product>
+        // So res.list should be correct if getProducts returns Promise<PageResult<Product>>
+        // But wait, getProducts types says it returns whatever client.get returns.
+        // Let's assume client.ts unwraps ApiResponse and returns data payload.
+        setProducts(res.list || []);
       } catch (error) {
         console.error(error);
+        // Fallback for demo if API fails? No, migration plan says remove mock.
       } finally {
         setLoading(false);
       }

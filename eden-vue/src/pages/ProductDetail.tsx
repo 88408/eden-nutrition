@@ -20,24 +20,8 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        // Mock API
-        // const res = await getProductDetail(Number(id));
-        // setProduct(res.data);
-        
-        // Mock Data
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setProduct({
-          id: Number(id),
-          name: '有机乳清蛋白粉',
-          description: '我们的优质草饲乳清蛋白分离物源自快乐健康的奶牛。每份提供25克蛋白质，零糖分，低碳水化合物。非常适合运动后恢复或日常蛋白质补充。',
-          price: 49.99,
-          originalPrice: 59.99,
-          imageUrl: 'https://picsum.photos/seed/whey/600/600',
-          categoryId: 1,
-          rating: 4.8,
-          reviewCount: 120,
-          stock: 100
-        });
+        const res = await getProductDetail(Number(id));
+        setProduct(res); // Assuming res is Product object after client.ts interceptor
       } catch (error) {
         console.error(error);
       } finally {
@@ -52,15 +36,8 @@ const ProductDetail = () => {
     if (!product) return;
     setAdding(true);
     try {
-      // Mock API call
-      // await addToCart({ productId: product.id, quantity });
-      
-      // Mock Redux update
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // In a real app, we would fetch the updated cart from the server
-      // const cartRes = await getCart();
-      // dispatch(setCartItems(cartRes.data));
-      
+      await addToCart({ productId: product.id, quantity });
+      // Suggest fetching cart count here or similar
       alert('已加入购物车！');
     } catch (error) {
       console.error(error);

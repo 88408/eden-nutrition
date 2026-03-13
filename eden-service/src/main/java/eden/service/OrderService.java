@@ -31,6 +31,16 @@ public interface OrderService {
     PageVO<Order> getUserOrders(Long userId, Integer status, int pageNum, int pageSize);
 
     /**
+     * 条件查询订单列表（管理员）
+     */
+    PageVO<Order> queryOrders(eden.pojo.dto.OrderQueryDTO queryDTO);
+
+    /**
+     * 订单发货
+     */
+    void shipOrder(String orderNo);
+
+    /**
      * 取消订单
      */
     void cancelOrder(Long userId, String orderNo);

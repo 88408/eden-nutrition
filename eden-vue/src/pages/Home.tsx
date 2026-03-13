@@ -12,28 +12,15 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         // In a real app, we might have a specific endpoint for featured products
         const response = await getProducts({ pageNum: 1, pageSize: 4 });
-        if (response.data && response.data.list) {
-          setFeaturedProducts(response.data.list);
-        } else {
-          // Fallback mock data if API fails or returns empty
-          setFeaturedProducts([
-            { id: 1, name: '有机乳清蛋白粉', description: '草饲乳清蛋白分离物。', price: 49.99, imageUrl: 'https://picsum.photos/seed/whey/400/400', categoryId: 1, rating: 4.8, reviewCount: 120, stock: 100 },
-            { id: 2, name: '复合维生素', description: '每日必需的维生素和矿物质。', price: 29.99, imageUrl: 'https://picsum.photos/seed/vitamin/400/400', categoryId: 2, rating: 4.5, reviewCount: 85, stock: 50 },
-            { id: 3, name: 'Omega-3 深海鱼油', description: '高含量 EPA & DHA。', price: 24.99, imageUrl: 'https://picsum.photos/seed/omega/400/400', categoryId: 2, rating: 4.7, reviewCount: 200, stock: 80 },
-            { id: 4, name: '训练前能量补剂', description: '提升您的能量和专注力。', price: 39.99, imageUrl: 'https://picsum.photos/seed/energy/400/400', categoryId: 1, rating: 4.6, reviewCount: 150, stock: 60 },
-          ]);
+        // client.ts returns the data payload (PageResult), so response.list is the array
+        if (response && response.list) {
+          setFeaturedProducts(response.list);
         }
       } catch (error) {
         console.error('Failed to fetch products', error);
-         // Fallback mock data
-         setFeaturedProducts([
-            { id: 1, name: '有机乳清蛋白粉', description: '草饲乳清蛋白分离物。', price: 49.99, imageUrl: 'https://picsum.photos/seed/whey/400/400', categoryId: 1, rating: 4.8, reviewCount: 120, stock: 100 },
-            { id: 2, name: '复合维生素', description: '每日必需的维生素和矿物质。', price: 29.99, imageUrl: 'https://picsum.photos/seed/vitamin/400/400', categoryId: 2, rating: 4.5, reviewCount: 85, stock: 50 },
-            { id: 3, name: 'Omega-3 深海鱼油', description: '高含量 EPA & DHA。', price: 24.99, imageUrl: 'https://picsum.photos/seed/omega/400/400', categoryId: 2, rating: 4.7, reviewCount: 200, stock: 80 },
-            { id: 4, name: '训练前能量补剂', description: '提升您的能量和专注力。', price: 39.99, imageUrl: 'https://picsum.photos/seed/energy/400/400', categoryId: 1, rating: 4.6, reviewCount: 150, stock: 60 },
-          ]);
       } finally {
         setLoading(false);
       }

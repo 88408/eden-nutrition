@@ -1,6 +1,7 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import { fetchOrders } from '../../store/slices/orderSlice';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -19,15 +20,8 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-const salesData = [
-  { name: '10-18', sales: 4000 },
-  { name: '10-19', sales: 3000 },
-  { name: '10-20', sales: 2000 },
-  { name: '10-21', sales: 2780 },
-  { name: '10-22', sales: 1890 },
-  { name: '10-23', sales: 2390 },
-  { name: '10-24', sales: 3490 },
-];
+// Removed static salesData
+
 
 const MetricCard = ({ title, value, icon: Icon, trend, trendValue, colorClass }: any) => (
   <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
@@ -53,12 +47,42 @@ const MetricCard = ({ title, value, icon: Icon, trend, trendValue, colorClass }:
 );
 
 export default function Dashboard() {
+  const dispatch = useDispatch<AppDispatch>();
   const products = useSelector((state: RootState) => state.products.items);
   const orders = useSelector((state: RootState) => state.orders.items);
   
+  useEffect(() => {
+    // Fetch recent orders for dashboard stats (limit 100 to get a good sample)
+    dispatch(fetchOrders({ pageSize: 100 }));
+  }, [dispatch]);
+
   const lowStockCount = products.filter(p => p.stock < 10).length;
-  const todayOrders = orders.filter(o => o.createTime.startsWith('2023-10-24'));
+  
+  // Dynamic today's date
+  const today = new Date().toISOString().slice(0, 10);
+  const todayOrders = orders.filter(o => o.createTime && o.createTime.startsWith(today));
   const todaySales = todayOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+  // Generate chart data for last 7 days
+  const salesMap: Record<string, number> = {};
+  orders.forEach(order => {
+      if (!order.createTime) return;
+      // Assuming createTime is ISO string or YYYY-MM-DD...
+      const dateKey = order.createTime.slice(5, 10); 
+      salesMap[dateKey] = (salesMap[dateKey] || 0) + order.totalAmount;
+  });
+  
+  const chartData = [];
+  for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const iso = d.toISOString(); 
+      const dateKey = iso.slice(5, 10);
+      chartData.push({
+          name: dateKey,
+          sales: salesMap[dateKey] || 0
+      });
+  }
 
   return (
     <div className="space-y-8">
@@ -117,7 +141,7 @@ export default function Dashboard() {
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>

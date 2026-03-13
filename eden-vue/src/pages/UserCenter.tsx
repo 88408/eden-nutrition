@@ -15,39 +15,8 @@ const UserCenter = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        // Mock API
-        // const res = await getOrders({ pageNum: 1, pageSize: 10 });
-        // setOrders(res.data.list);
-        
-        // Mock Data
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setOrders([
-          {
-            id: 1,
-            orderNo: 'ORD-20240304-001',
-            userId: 1,
-            totalAmount: 129.97,
-            status: 'COMPLETED',
-            createTime: '2024-03-01 10:00:00',
-            address: { id: 1, userId: 1, receiverName: '张三', receiverPhone: '13800138000', province: '北京', city: '北京市', district: '朝阳区', detailAddress: '朝阳路123号', isDefault: true },
-            items: [
-              { id: 1, orderId: 1, productId: 1, productName: '有机乳清蛋白粉', productImage: 'https://picsum.photos/seed/whey/100/100', price: 49.99, quantity: 2 },
-              { id: 2, orderId: 1, productId: 2, productName: '复合维生素', productImage: 'https://picsum.photos/seed/vitamin/100/100', price: 29.99, quantity: 1 },
-            ]
-          },
-          {
-            id: 2,
-            orderNo: 'ORD-20240303-002',
-            userId: 1,
-            totalAmount: 24.99,
-            status: 'SHIPPED',
-            createTime: '2024-03-03 14:30:00',
-            address: { id: 1, userId: 1, receiverName: '张三', receiverPhone: '13800138000', province: '北京', city: '北京市', district: '朝阳区', detailAddress: '朝阳路123号', isDefault: true },
-            items: [
-              { id: 3, orderId: 2, productId: 3, productName: 'Omega-3 深海鱼油', productImage: 'https://picsum.photos/seed/omega/100/100', price: 24.99, quantity: 1 },
-            ]
-          }
-        ]);
+        const res = await getOrders({ pageNum: 1, pageSize: 10 });
+        setOrders(res.list);
       } catch (error) {
         console.error(error);
       } finally {

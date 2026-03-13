@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store';
-import { updateOrderStatus } from '../../store/slices/orderSlice';
+import { RootState, AppDispatch } from '../../store';
+import { fetchOrders, shipOrder } from '../../store/slices/orderSlice';
 import { Order } from '../../types';
 import { 
   Search, 
@@ -22,9 +22,20 @@ const statusMap = {
   'CANCELLED': { label: '已取消', color: 'bg-red-100 text-red-700' },
 };
 
+const getStatusValue = (statusKey: string): number | undefined => {
+    switch (statusKey) {
+        case 'PENDING_PAYMENT': return 0;
+        case 'PAID': return 1;
+        case 'SHIPPED': return 2;
+        case 'COMPLETED': return 3;
+        case 'CANCELLED': return 4;
+        default: return undefined;
+    }
+};
+
 export default function OrderManagement() {
-  const dispatch = useDispatch();
-  const orders = useSelector((state: RootState) => state.orders.items);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items: orders, status, error } = useSelector((state: RootState) => state.orders);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
@@ -32,16 +43,25 @@ export default function OrderManagement() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.orderNo.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'ALL' || o.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(fetchOrders({ 
+        orderNo: searchTerm || undefined, 
+        status: getStatusValue(selectedStatus) 
+      }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [dispatch, searchTerm, selectedStatus]);
 
-  const handleShipOrder = (id: number) => {
+  const handleShipOrder = async (orderNo: string) => {
     if (window.confirm('确认该订单已发货吗？')) {
-      dispatch(updateOrderStatus({ id, status: 'SHIPPED' }));
-      toast.success('订单已标记为发货');
+      try {
+          await dispatch(shipOrder(orderNo)).unwrap();
+          toast.success('订单已标记为发货');
+      } catch (err) {
+          console.error(err);
+          toast.error('发货失败');
+      }
     }
   };
 
@@ -100,7 +120,7 @@ export default function OrderManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredOrders.map(order => (
+              {orders.map(order => (
                 <tr key={order.id} className="hover:bg-gray-50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="font-medium text-gray-900">{order.orderNo}</div>
@@ -131,7 +151,7 @@ export default function OrderManagement() {
                       </button>
                       {order.status === 'PAID' && (
                         <button 
-                          onClick={() => handleShipOrder(order.id)}
+                          onClick={() => handleShipOrder(order.orderNo)}
                           className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-medium"
                           title="发货"
                         >
@@ -143,10 +163,10 @@ export default function OrderManagement() {
                   </td>
                 </tr>
               ))}
-              {filteredOrders.length === 0 && (
+              {orders.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    没有找到匹配的订单
+                    {status === 'loading' ? '加载中...' : '没有找到匹配的订单'}
                   </td>
                 </tr>
               )}
