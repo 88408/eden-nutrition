@@ -1,0 +1,64 @@
+2026-03-13 15:55:40.506  INFO 17152 --- [main] eden.EdenApplication                     : Starting EdenApplication using Java 17.0.12 on limz with PID 17152 (D:\project\eden-nutrition\eden-admin\target\classes started by 28391 in D:\project\eden-nutrition)
+2026-03-13 16:12:46.850  INFO 39640 --- [main] eden.EdenApplication                     : Starting EdenApplication using Java 17.0.12 on limz with PID 39640 (D:\project\eden-nutrition\eden-admin\target\classes started by 28391 in D:\project\eden-nutrition)
+2026-03-13 16:12:46.873  INFO 39640 --- [main] eden.EdenApplication                     : The following 1 profile is active: "dev"
+2026-03-13 16:12:49.146  INFO 39640 --- [main] ConditionEvaluationReportLoggingListener : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2026-03-13 16:20:40.886  INFO 40268 --- [main] eden.EdenApplication                     : Starting EdenApplication using Java 17.0.12 on limz with PID 40268 (D:\project\eden-nutrition\eden-admin\target\classes started by 28391 in D:\project\eden-nutrition)
+2026-03-13 16:20:40.906  INFO 40268 --- [main] eden.EdenApplication                     : The following 1 profile is active: "dev"
+2026-03-13 16:20:43.521  INFO 40268 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-03-13 16:20:43.527  INFO 40268 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-13 16:20:43.620  INFO 40268 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 53 ms. Found 0 Redis repository interfaces.
+2026-03-13 16:20:45.698  INFO 40268 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-03-13 16:20:45.721  INFO 40268 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-13 16:20:45.722  INFO 40268 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
+2026-03-13 16:20:46.012  INFO 40268 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-03-13 16:20:46.013  INFO 40268 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5009 ms
+2026-03-13 16:20:47.598  INFO 40268 --- [main] org.redisson.Version                     : Redisson 3.17.6
+2026-03-13 16:20:48.386  INFO 40268 --- [redisson-netty-2-6] o.r.c.pool.MasterPubSubConnectionPool    : 1 connections initialized for localhost/127.0.0.1:6379
+2026-03-13 16:20:48.516  INFO 40268 --- [redisson-netty-2-20] o.r.c.pool.MasterConnectionPool          : 24 connections initialized for localhost/127.0.0.1:6379
+2026-03-13 16:20:48.871  INFO 40268 --- [main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-03-13 16:20:48.967  INFO 40268 --- [main] ConditionEvaluationReportLoggingListener : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2026-03-13 16:26:28.753  INFO 29984 --- [main] eden.EdenApplication                     : Starting EdenApplication using Java 17.0.12 on limz with PID 29984 (D:\project\eden-nutrition\eden-admin\target\classes started by 28391 in D:\project\eden-nutrition)
+2026-03-13 16:26:28.776  INFO 29984 --- [main] eden.EdenApplication                     : The following 1 profile is active: "dev"
+2026-03-13 16:26:31.493  INFO 29984 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-03-13 16:26:31.498  INFO 29984 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-13 16:26:31.572  INFO 29984 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 37 ms. Found 0 Redis repository interfaces.
+2026-03-13 16:26:33.700  INFO 29984 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-03-13 16:26:33.726  INFO 29984 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-13 16:26:33.726  INFO 29984 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
+2026-03-13 16:26:34.107  INFO 29984 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-03-13 16:26:34.107  INFO 29984 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5229 ms
+2026-03-13 16:26:35.814  INFO 29984 --- [main] org.redisson.Version                     : Redisson 3.17.6
+2026-03-13 16:26:36.609  INFO 29984 --- [redisson-netty-2-6] o.r.c.pool.MasterPubSubConnectionPool    : 1 connections initialized for localhost/127.0.0.1:6379
+2026-03-13 16:26:36.685  INFO 29984 --- [redisson-netty-2-20] o.r.c.pool.MasterConnectionPool          : 24 connections initialized for localhost/127.0.0.1:6379
+2026-03-13 16:26:38.745  INFO 29984 --- [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 14 endpoint(s) beneath base path '/actuator'
+2026-03-13 16:26:39.218  INFO 29984 --- [main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@c680819, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@52cda4bd, org.springframework.security.web.context.SecurityContextPersistenceFilter@671c71e8, org.springframework.security.web.header.HeaderWriterFilter@4fe4b8b6, org.springframework.security.web.authentication.logout.LogoutFilter@16eca98a, eden.web.filter.JwtAuthenticationTokenFilter@51097500, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@31d791c0, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@623c9988, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@40aaf656, org.springframework.security.web.session.SessionManagementFilter@473c491, org.springframework.security.web.access.ExceptionTranslationFilter@554db19d, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@3bbb3c84]
+2026-03-13 16:26:40.360  INFO 29984 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path '/api'
+2026-03-13 16:26:41.197  INFO 29984 --- [main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-03-13 16:26:41.367  INFO 29984 --- [main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#49c37918:0/SimpleConnection@2f7e2481 [delegate=amqp://user@127.0.0.1:5672/, localPort= 9479]
+2026-03-13 16:26:41.537  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-1] e.service.listener.OrderMessageListener  : 收到订单支付成功消息，订单ID: 2025121713395639540001
+2026-03-13 16:26:41.650  INFO 29984 --- [main] eden.EdenApplication                     : Started EdenApplication in 14.631 seconds (JVM running for 16.142)
+2026-03-13 16:26:42.230  INFO 29984 --- [RMI TCP Connection(1)-100.91.106.125] com.zaxxer.hikari.HikariDataSource       : EdenHikariCP - Starting...
+2026-03-13 16:26:42.268  INFO 29984 --- [RMI TCP Connection(3)-100.91.106.125] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-13 16:26:42.269  INFO 29984 --- [RMI TCP Connection(3)-100.91.106.125] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-13 16:26:42.272  INFO 29984 --- [RMI TCP Connection(3)-100.91.106.125] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-03-13 16:26:42.688  INFO 29984 --- [RMI TCP Connection(1)-100.91.106.125] com.zaxxer.hikari.HikariDataSource       : EdenHikariCP - Start completed.
+2026-03-13 16:27:00.009  INFO 29984 --- [scheduling-1] eden.service.task.OrderTask              : 开始执行订单超时关闭任务...
+2026-03-13 16:27:00.301  INFO 29984 --- [scheduling-1] eden.service.task.OrderTask              : 没有超时订单需要关闭
+2026-03-13 16:27:33.172  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.175  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#1-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.177  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.181  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#3-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.183  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#4-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.185  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#5-2] o.s.a.r.l.SimpleMessageListenerContainer : Waiting for workers to finish.
+2026-03-13 16:27:33.919  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#3-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:33.919  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:33.919  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#1-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:33.933  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:33.948  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#5-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:33.950  INFO 29984 --- [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#4-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-03-13 16:27:34.070  INFO 29984 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : EdenHikariCP - Shutdown initiated...
+2026-03-13 16:27:34.076  INFO 29984 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : EdenHikariCP - Shutdown completed.

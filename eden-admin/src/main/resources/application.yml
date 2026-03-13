@@ -98,6 +98,37 @@ elasticsearch:
   port: 9200
 
 # Actuator & Monitoring 配置
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#  endpoint:
+#    health:
+#      show-details: always
+#    info:
+#      enabled: true
+#    prometheus:
+#      enabled: true
+#  metrics:
+#    tags:
+#      application: ${spring.application.name}
+#    export:
+#      prometheus:
+#        enabled: true
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#  endpoint:
+#    health:
+#      show-details: always
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: true
+# Actuator & Monitoring 配置
 management:
   endpoints:
     web:
@@ -113,18 +144,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-    export:
-      prometheus:
-        enabled: true
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-  metrics:
     export:
       prometheus:
         enabled: true
