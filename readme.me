@@ -5,7 +5,7 @@
 二、项目简介
 一个专注于高端滋补品（如燕窝、人参、阿胶、灵芝等）的 B2C 电商平台，支持商品浏览、购物车、订单管理、用户评价、优惠券、秒杀活动、会员积分等功能。采用 SSM 框架，遵循企业级开发规范，具备高内聚、低耦合、可测试、可部署特性。
 
-三、技术栈（大厂简历级重点）
+三、技术栈
 类别
 技术选型
 后端框架
@@ -34,7 +34,6 @@ Prometheus + Grafana（可选）
 Logback + ELK（可选）
 API 文档
 Swagger3（OpenAPI 3.0）
-📌 简历亮点：强调自己实现了 分布式锁处理超卖、Redis 缓存穿透/雪崩防护、MyBatis 二级缓存优化、RabbitMQ 延迟队列实现订单超时取消 等企业级问题。
 
 四、核心功能模块
 1. 用户模块
@@ -64,7 +63,7 @@ Redis 存储购物车（支持未登录用户临时购物车）
 订单管理
 用户管理
 数据统计（日活、销售额、热销商品）
-五、关键设计亮点（简历中重点描述）
+五、关键设计
 ✅ 1. 高并发秒杀设计
 前端：按钮置灰、倒计时
 后端：
@@ -106,18 +105,13 @@ eden-nutrition/
 ├── eden-mapper        // MyBatis Mapper 接口 + XML
 ├── eden-service       // 业务逻辑
 ├── eden-web           // Spring MVC Controller + 拦截器
-├── eden-admin         // 后台管理模块（可合并到 web）
+├── eden-admin         // 后台管理模块
 └── eden-config        // Swagger、Redis、RabbitMQ 配置
 八、部署与测试
 单元测试：JUnit + Mockito（Service 层覆盖率 > 80%）
 接口测试：Postman + Swagger
 压测：JMeter 测试秒杀接口（QPS > 1000）
 Dockerfile：一键部署 MySQL + Redis + App
-九、简历描述建议（STAR 法则）
-项目名称：伊甸滋补线上商店（SSM 电商系统）
-项目描述：基于 Spring + Spring MVC + MyBatis 构建的高性能滋补品电商平台，支持高并发秒杀、分布式缓存、异步订单处理等企业级特性。
-技术亮点：
-
 使用 Redis + RabbitMQ 实现秒杀系统，通过预减库存与异步下单将 QPS 提升至 1200+，并通过 Redisson 分布式锁解决超卖问题；
 设计多级缓存策略（本地缓存 + Redis）降低数据库压力，缓存命中率达 95%；
 基于 JWT + 拦截器实现 RBAC 权限控制，支持用户与管理员角色分离；
