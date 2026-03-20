@@ -22,6 +22,11 @@ public class MQConstants {
     /** 秒杀交换机 */
     public static final String SECKILL_EXCHANGE = "eden.seckill.exchange";
 
+    // ============================= Routing Key 路由键 =============================
+
+    /** 秒杀路由键 */
+    public static final String SECKILL_ROUTING_KEY = "eden.seckill.key";
+
     // ============================= Queue 队列 =============================
 
     /** 订单创建队列 */

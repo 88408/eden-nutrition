@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import { fetchProducts, addNewProduct, updateExistingProduct, removeProduct } from '../../store/slices/productSlice';
 import { Product, Category } from '../../types';
-import { getCategories } from '../../api/category';
+import { getCategories, addCategory } from '../../api/category';
 import { 
   Plus, 
   Search, 
@@ -24,7 +24,7 @@ export default function ProductManagement() {
 
   useEffect(() => {
     if (status === 'idle') {
-      dispatch(fetchProducts());
+      dispatch(fetchProducts({}));
     }
   }, [status, dispatch]);
 
@@ -52,6 +52,25 @@ export default function ProductManagement() {
     isNew: 0,
     detail: '',
   });
+
+  const handleAddNewCategory = async () => {
+    const name = window.prompt("请输入新分类名称：");
+    if (name) {
+      try {
+        await addCategory({ name, parentId: 0, level: 1, sortOrder: 100, status: 1 });
+        toast.success("分类添加成功");
+        const list = await getCategories();
+        setCategories(list);
+        const newCat = list.find(c => c.name === name);
+        if (newCat) {
+          setFormData(prev => ({ ...prev, categoryId: newCat.id }));
+        }
+      } catch (e) {
+        toast.error("添加分类失败");
+        console.error(e);
+      }
+    }
+  };
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -160,7 +179,7 @@ export default function ProductManagement() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
           />
         </div>
-        <div className="relative min-w-[200px]">
+        <div className="relative min-w-50">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <select 
             value={selectedCategory}
@@ -306,16 +325,26 @@ export default function ProductManagement() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
-                    <select 
-                      required
-                      value={formData.categoryId}
-                      onChange={e => setFormData({...formData, categoryId: Number(e.target.value)})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white"
-                    >
-                      {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select 
+                        required
+                        value={formData.categoryId}
+                        onChange={e => setFormData({...formData, categoryId: Number(e.target.value)})}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white"
+                      >
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button
+                          type="button"
+                          onClick={handleAddNewCategory}
+                          className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                          title="新增分类"
+                      >
+                          <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div>

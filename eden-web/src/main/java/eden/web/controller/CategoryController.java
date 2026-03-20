@@ -49,4 +49,12 @@ public class CategoryController {
         Category category = categoryService.getById(id);
         return Result.success(category);
     }
+
+    @ApiOperation("新增分类")
+    @PostMapping("/add")
+    public Result<String> add(@RequestBody Category category) {
+        categoryService.add(category);
+        return Result.success("操作成功");
+    }
 }
+

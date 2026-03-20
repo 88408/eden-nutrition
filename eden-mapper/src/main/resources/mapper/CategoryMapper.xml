@@ -45,9 +45,18 @@
         ORDER BY sort_order ASC
     </select>
 
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="eden.pojo.Category" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO category (name, parent_id, level, sort_order, icon, status, create_time, update_time)
-        VALUES (#{name}, #{parentId}, #{level}, #{sortOrder}, #{icon}, #{status}, NOW(), NOW())
+        VALUES (
+            #{name, jdbcType=VARCHAR},
+            #{parentId, jdbcType=BIGINT},
+            #{level, jdbcType=INTEGER},
+            #{sortOrder, jdbcType=INTEGER},
+            #{icon, jdbcType=VARCHAR},
+            #{status, jdbcType=INTEGER},
+            NOW(),
+            NOW()
+        )
     </insert>
 
     <update id="update">

@@ -1,3 +1,31 @@
+export interface Result<T = any> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+export interface LoginDTO {
+  username?: string;
+  password?: string;
+  phone?: string;
+  code?: string;
+}
+
+export interface LoginVO {
+  token: string;
+  userInfo: UserInfo;
+}
+
+export interface UserInfo {
+  id: number;
+  username: string;
+  nickname: string;
+  avatar: string;
+  phone: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
+}
+
 export interface Product {
   id: number;
   name: string;

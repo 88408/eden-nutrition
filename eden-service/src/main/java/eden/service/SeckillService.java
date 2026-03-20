@@ -54,4 +54,4 @@ public interface SeckillService {
      */
     List<eden.pojo.dto.SeckillSessionDTO> getSeckillSessions();
 }
-}
+

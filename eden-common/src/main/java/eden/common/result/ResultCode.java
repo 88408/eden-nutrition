@@ -55,8 +55,8 @@ public enum ResultCode {
     // 秒杀相关 6xxx
     SECKILL_NOT_START(6001, "秒杀活动未开始"),
     SECKILL_ENDED(6002, "秒杀活动已结束"),
-    SECKILL_SOLD_OUT(6003, "秒杀商品已售罄"),
-    SECKILL_REPEATED(6004, "不可重复参与秒杀"),
+    SECKILL_NO_STOCK(6003, "库存不足"),
+    SECKILL_REPEAT(6004, "您已经参与过该秒杀"),
     SECKILL_LIMIT(6005, "超过秒杀限购数量"),
 
     // 地址相关 7xxx

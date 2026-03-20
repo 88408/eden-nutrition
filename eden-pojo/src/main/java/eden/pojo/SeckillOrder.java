@@ -2,6 +2,7 @@ package eden.pojo;
 
 import lombok.Data;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -17,6 +18,9 @@ public class SeckillOrder implements Serializable {
     /** 用户ID */
     private Long userId;
 
+    /** 订单编号 */
+    private String orderNo;
+
     /** 订单ID */
     private Long orderId;
 
@@ -25,6 +29,12 @@ public class SeckillOrder implements Serializable {
 
     /** 商品ID */
     private Long productId;
+
+    /** 秒杀金额 */
+    private BigDecimal amount;
+
+    /** 状态：0-未支付，1-已支付，2-已取消 */
+    private Integer status;
 
     /** 创建时间 */
     private LocalDateTime createTime;

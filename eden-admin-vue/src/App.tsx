@@ -5,13 +5,29 @@ import Dashboard from './pages/Dashboard';
 import ProductManagement from './pages/ProductManagement';
 import OrderManagement from './pages/OrderManagement';
 import FlashSale from './pages/Marketing/FlashSale';
+import Login from './pages/Login';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="/admin" element={<AdminLayout />}>
+        
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductManagement />} />

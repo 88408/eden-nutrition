@@ -43,10 +43,15 @@
         <jwt.version>0.11.5</jwt.version>
         <swagger.version>3.0.0</swagger.version>
         <knife4j.version>3.0.3</knife4j.version>
-        <redisson.version>3.17.6</redisson.version>
+        <redisson.version>3.37.0</redisson.version>
         <elasticsearch.version>7.17.10</elasticsearch.version>
         <hutool.version>5.8.22</hutool.version>
         <jbcrypt.version>0.4</jbcrypt.version>
+
+        <!-- Security Fixes -->
+        <tomcat.version>9.0.109</tomcat.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
+        <logback.version>1.2.13</logback.version>
     </properties>
 
     <!-- Dependency Version Management -->
