@@ -67,21 +67,169 @@
 - **优点**: 拥有最丰富的 AI 库 (PyTorch, TensorFlow, LangChain)。
 - **缺点**: 增加运维复杂度 (Docker 容器增多，服务间通信)。
 
-## 4. 示例代码片段 (Java - LangChain4j)
+## 4. 具体代码落地 (Concrete Implementation)
 
-在 `eden-service` 中集成的简单示例：
+鉴于项目当前基于 **Spring Boot 2.7.18** 和 **JDK 17**，我们推荐使用兼容性极佳的 **LangChain4j** 框架。它能无缝集成到现有 Spring Boot 2.x 环境中，且 API 设计优雅，支持声明式服务调用。
+
+### 4.1 引入依赖 (Maven)
+
+在根目录或 `eden-common` 模块的 `pom.xml` 中添加 `langchain4j` 依赖：
+
+```xml
+<properties>
+    <langchain4j.version>0.31.0</langchain4j.version>
+</properties>
+
+<dependencies>
+    <!-- LangChain4j Core: 集成 OpenAI (或其他模型提供商) -->
+    <dependency>
+        <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j-open-ai</artifactId>
+        <version>${langchain4j.version}</version>
+    </dependency>
+    <!-- Spring Boot Starter: 简化自动配置 -->
+    <dependency>
+        <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j-spring-boot-starter</artifactId>
+        <version>${langchain4j.version}</version>
+    </dependency>
+</dependencies>
+```
+
+### 4.2 配置文件 (Configuration)
+
+在 `eden-admin/src/main/resources/application.yml` (或 Nacos 配置中心) 中添加模型配置：
+
+```yaml
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY} # 建议从环境变量读取
+      base-url: https://api.openai.com/v1 # 如果使用代理或国内中转及 Azure，需修改此处
+      model-name: gpt-3.5-turbo  # 生产环境推荐 gpt-4o
+      temperature: 0.7
+      log-requests: true
+      log-responses: true
+```
+
+### 4.3 核心服务实现 (Service Layer)
+
+在 `eden-service` 模块中，利用 LangChain4j 的 `AiServices` 创建声明式 AI 服务。
+
+**1. 定义 AI 服务接口 `ProductCopywriter.java`:**
 
 ```java
-// 伪代码：商品文案生成服务
-@Service
-public class AiContentService {
+package com.eden.service.ai;
 
-    private final ChatLanguageModel chatModel; // LangChain4j
+import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
 
-    public String generateProductDescription(String productName, List<String> tags) {
-        String prompt = "请为一款名为 '" + productName + "' 的健康食品撰写吸引人的电商详情页文案。" +
-                        "特点包括: " + String.join(", ", tags) + "。包含emoji，风格亲切。";
-        return chatModel.generate(prompt);
+/**
+ * AI 商品文案生成器接口
+ */
+public interface ProductCopywriter {
+
+    @SystemMessage("你是一个专业的健康食品电商文案策划大师。你的目标是根据商品信息撰写吸引人的营销文案。\n" +
+                   "要求：\n" +
+                   "1. 输出格式为 HTML (包含 <h3>, <p>, <ul> 等标签)。\n" +
+                   "2. 语气专业、亲切、健康向。\n" +
+                   "3. 重点突出营养价值。")
+    @UserMessage("请为一款名为 \"{{name}}\" 的商品撰写详情页文案。\n" +
+                 "核心关键词：{{keywords}}。\n" +
+                 "目标人群：{{targetAudience}}。\n" +
+                 "文案风格：{{style}}。")
+    String generateDescription(@V("name") String name, 
+                               @V("keywords") String keywords, 
+                               @V("targetAudience") String targetAudience,
+                               @V("style") String style);
+}
+```
+
+**2. 配置 Bean (`AiConfig.java`):**
+
+在 `eden-config` 或 `eden-service` 的配置包中：
+
+```java
+package com.eden.config;
+
+import com.eden.service.ai.ProductCopywriter;
+import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.service.AiServices;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class AiConfig {
+
+    @Bean
+    public ProductCopywriter productCopywriter(ChatLanguageModel chatLanguageModel) {
+        // LangChain4j 会自动注入配置好的 ChatLanguageModel (基于 yaml 配置)
+        return AiServices.builder(ProductCopywriter.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
+}
+```
+
+### 4.4 Web 层接入 (Controller)
+
+在 `eden-admin` 模块中暴露接口供前端使用：
+
+```java
+@RestController
+@RequestMapping("/admin/ai")
+@Tag(name = "AI 辅助工具")
+public class AiController {
+
+    @Autowired
+    private ProductCopywriter productCopywriter;
+
+    @PostMapping("/generate/product-desc")
+    public CommonResult<String> generateProductDesc(@RequestBody AiGenerateRequest req) {
+        // 校验参数...
+        String content = productCopywriter.generateDescription(
+            req.getName(), 
+            req.getKeywords(), 
+            req.getTargetAudience(), 
+            req.getStyle()
+        );
+        return CommonResult.success(content);
+    }
+}
+
+// REQUEST DTO
+@Data
+class AiGenerateRequest {
+    private String name;
+    private String keywords;
+    private String targetAudience; // 如：老人、健身人群
+    private String style;          // 如：专业严谨、轻松活泼
+}
+```
+
+### 4.5 数据库与 RAG (进阶 Phase 2)
+
+为了实现**智能问答 (Chatbot)**，后续需引入向量存储。考虑到项目已有 Elasticsearch，可以使用其向量插件。
+
+**代码预览 (RAG Ingest)**:
+```java
+// 当商品更新时，将描述转化为向量存入 ES
+@Component
+public class ProductVectorSyncer {
+    
+    @Autowired EmbeddingModel embeddingModel; // 同样由 LangChain4j 提供
+    @Autowired VectorStore vectorStore;       // LangChain4j ElasticsearchStore
+
+    @EventListener
+    public void onProductUpdate(ProductUpdateEvent event) {
+        Product p = event.getProduct();
+        TextSegment segment = TextSegment.from(
+            p.getName() + ": " + p.getDescription(), 
+            Metadata.from("productId", p.getId())
+        );
+        Embedding embedding = embeddingModel.embed(segment).content();
+        vectorStore.add(embedding, segment);
     }
 }
 ```
