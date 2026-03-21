@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -49,6 +48,9 @@ public class SecurityConfig {
             .authorizeRequests()
             // 允许匿名访问的接口
             .antMatchers("/user/login", "/user/register").permitAll()
+            // 允许匿名访问订阅接口（前端订阅不需要登录）
+            // 使用更通用的匹配，兼容有无 context-path 的情况
+            .antMatchers("/subscribe", "/api/subscribe", "/**/subscribe").permitAll()
             // Swagger / Knife4j 相关
             .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
             // 静态资源
