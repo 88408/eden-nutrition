@@ -90,4 +90,8 @@ public interface OrderMapper {
      * 统计销售额（按日期范围）
      */
     java.math.BigDecimal sumPayAmount(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    // --- 以下为 B端管理接口 ---
+    List<Order> selectAdminOrderList(@Param("query") eden.pojo.dto.AdminOrderQueryDTO queryDTO);
+    long countAdminOrderList(@Param("query") eden.pojo.dto.AdminOrderQueryDTO queryDTO);
 }

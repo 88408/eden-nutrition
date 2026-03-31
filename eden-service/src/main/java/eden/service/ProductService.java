@@ -2,6 +2,8 @@ package eden.service;
 
 import eden.pojo.Product;
 import eden.pojo.dto.ProductQueryDTO;
+import eden.pojo.dto.AdminProductQueryDTO;
+import eden.pojo.dto.ProductSaveDTO;
 import eden.pojo.vo.PageVO;
 import java.util.List;
 
@@ -69,4 +71,24 @@ public interface ProductService {
      * 增加销量
      */
     void increaseSales(Long productId, Integer quantity);
+
+    /**
+     * B端管理后台专用：获取商品分页列表
+     */
+    PageVO<Product> getAdminProductPage(AdminProductQueryDTO queryDTO);
+
+    /**
+     * B端管理后台专用：根据ID获取商品（无视上下架状态，不走缓存）
+     */
+    Product getAdminById(Long id);
+
+    /**
+     * B端管理后台专用：新增商品
+     */
+    void saveProduct(ProductSaveDTO dto);
+
+    /**
+     * B端管理后台专用：修改全量商品信息
+     */
+    void updateProduct(ProductSaveDTO dto);
 }

@@ -69,4 +69,9 @@ public interface OrderService {
      * 删除订单（软删除）
      */
     void deleteOrder(Long userId, String orderNo);
+
+    // --- 以下为 B端管理接口 ---
+    PageVO<eden.pojo.vo.OrderAdminVO> getAdminOrderPage(eden.pojo.dto.AdminOrderQueryDTO queryDTO);
+    eden.pojo.vo.OrderDetailAdminVO getAdminOrderDetail(Long orderId);
+    void deliverOrder(eden.pojo.dto.OrderDeliverDTO deliverDTO);
 }
