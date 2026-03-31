@@ -411,4 +411,76 @@ public class OrderServiceImpl implements OrderService {
         updateOrder.setShipTime(LocalDateTime.now());
         orderMapper.update(updateOrder);
     }
+
+    // --- 以下为管理员端实现的接口 ---
+
+    @Override
+    public PageVO<eden.pojo.vo.OrderAdminVO> getAdminOrderPage(eden.pojo.dto.AdminOrderQueryDTO queryDTO) {
+        if (queryDTO.getPageNum() == null || queryDTO.getPageNum() < 1) {
+            queryDTO.setPageNum(1);
+        }
+        if (queryDTO.getPageSize() == null || queryDTO.getPageSize() < 1) {
+            queryDTO.setPageSize(10);
+        }
+        
+        // offset 已经由 PageDTO 提供自动计算，此处无需手动设值，Mybatis 直接调用 getOffset() 即可
+
+        // 使用同样的 mapper，如果需要特定字段可以新建 Mapper 方法，这里复用
+        List<Order> list = orderMapper.selectAdminOrderList(queryDTO);
+        long total = orderMapper.countAdminOrderList(queryDTO);
+
+        List<eden.pojo.vo.OrderAdminVO> voList = new ArrayList<>();
+        if (list != null) {
+            for (Order order : list) {
+                eden.pojo.vo.OrderAdminVO vo = new eden.pojo.vo.OrderAdminVO();
+                org.springframework.beans.BeanUtils.copyProperties(order, vo);
+                voList.add(vo);
+            }
+        }
+        return PageVO.of(voList, total, queryDTO.getPageNum(), queryDTO.getPageSize());
+    }
+
+    @Override
+    public eden.pojo.vo.OrderDetailAdminVO getAdminOrderDetail(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
+        }
+        eden.pojo.vo.OrderDetailAdminVO vo = new eden.pojo.vo.OrderDetailAdminVO();
+        org.springframework.beans.BeanUtils.copyProperties(order, vo);
+        
+        List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
+        List<eden.pojo.vo.OrderItemVO> itemVOs = new ArrayList<>();
+        if (items != null) {
+            for (OrderItem item : items) {
+                eden.pojo.vo.OrderItemVO itemVO = new eden.pojo.vo.OrderItemVO();
+                org.springframework.beans.BeanUtils.copyProperties(item, itemVO);
+                itemVOs.add(itemVO);
+            }
+        }
+        vo.setOrderItemList(itemVOs);
+        return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deliverOrder(eden.pojo.dto.OrderDeliverDTO deliverDTO) {
+        Order order = orderMapper.selectById(deliverDTO.getOrderId());
+        if (order == null) {
+            throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
+        }
+        // 只能是待发货状态
+        if (order.getStatus() != OrderConstants.STATUS_PAID) {
+            throw new BusinessException("订单不是待发货状态，无法发货");
+        }
+        
+        Order updateOrder = new Order();
+        updateOrder.setId(order.getId());
+        updateOrder.setDeliveryCompany(deliverDTO.getDeliveryCompany());
+        updateOrder.setDeliverySn(deliverDTO.getDeliverySn());
+        updateOrder.setStatus(OrderConstants.STATUS_SHIPPED);
+        updateOrder.setShipTime(LocalDateTime.now());
+        
+        orderMapper.update(updateOrder);
+    }
 }

@@ -109,6 +109,42 @@
         ORDER BY id DESC
     </select>
 
+    <!-- B端管理后台专用：全量查询商品，支持复合条件 -->
+    <select id="selectAdminList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product
+        <where>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR subtitle LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- B端管理后台专用：统计总数 -->
+    <select id="countAdminList" resultType="long">
+        SELECT COUNT(id)
+        FROM product
+        <where>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR subtitle LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO product (name, subtitle, category_id, main_image, sub_images, detail, original_price, price, stock, sales, status, is_hot, is_new, create_time, update_time)
         VALUES (#{name}, #{subtitle}, #{categoryId}, #{mainImage}, #{subImages}, #{detail}, #{originalPrice}, #{price}, #{stock}, #{sales}, #{status}, #{isHot}, #{isNew}, NOW(), NOW())

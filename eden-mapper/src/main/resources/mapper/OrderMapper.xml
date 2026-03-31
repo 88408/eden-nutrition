@@ -17,6 +17,8 @@
         <result column="receiver_phone" property="receiverPhone"/>
         <result column="receiver_address" property="receiverAddress"/>
         <result column="remark" property="remark"/>
+        <result column="delivery_company" property="deliveryCompany"/>
+        <result column="delivery_sn" property="deliverySn"/>
         <result column="pay_time" property="payTime"/>
         <result column="ship_time" property="shipTime"/>
         <result column="receive_time" property="receiveTime"/>
@@ -27,7 +29,7 @@
 
     <sql id="Base_Column_List">
         id, order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id, pay_type, status,
-        receiver_name, receiver_phone, receiver_address, remark, pay_time, ship_time, receive_time, complete_time, create_time, update_time
+        receiver_name, receiver_phone, receiver_address, remark, delivery_company, delivery_sn, pay_time, ship_time, receive_time, complete_time, create_time, update_time
     </sql>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -170,6 +172,8 @@
         <set>
             <if test="status != null">status = #{status},</if>
             <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
+            <if test="deliveryCompany != null">delivery_company = #{deliveryCompany},</if>
+            <if test="deliverySn != null">delivery_sn = #{deliverySn},</if>
             <if test="payTime != null">pay_time = #{payTime},</if>
             <if test="shipTime != null">ship_time = #{shipTime},</if>
             <if test="receiveTime != null">receive_time = #{receiveTime},</if>
@@ -178,4 +182,64 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <update id="update" parameterType="eden.pojo.Order">
+        UPDATE `order`
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
+            <if test="deliveryCompany != null">delivery_company = #{deliveryCompany},</if>
+            <if test="deliverySn != null">delivery_sn = #{deliverySn},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="shipTime != null">ship_time = #{shipTime},</if>
+            <if test="receiveTime != null">receive_time = #{receiveTime},</if>
+            <if test="completeTime != null">complete_time = #{completeTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 管理端：查询订单列表 -->
+    <select id="selectAdminOrderList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `order`
+        <where>
+            <if test="query.orderNo != null and query.orderNo != ''"> 
+                AND order_no LIKE CONCAT('%', #{query.orderNo}, '%') 
+            </if>
+            <if test="query.status != null"> 
+                AND status = #{query.status} 
+            </if>
+            <if test="query.startTime != null and query.startTime != ''"> 
+                AND create_time >= #{query.startTime} 
+            </if>
+            <if test="query.endTime != null and query.endTime != ''"> 
+                AND create_time &lt;= #{query.endTime} 
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        <if test="query.offset != null and query.limit != null">
+            LIMIT #{query.offset}, #{query.limit}
+        </if>
+    </select>
+
+    <!-- 管理端：统计订单数量 -->
+    <select id="countAdminOrderList" resultType="long">
+        SELECT COUNT(1) FROM `order`
+        <where>
+            <if test="query.orderNo != null and query.orderNo != ''"> 
+                AND order_no LIKE CONCAT('%', #{query.orderNo}, '%') 
+            </if>
+            <if test="query.status != null"> 
+                AND status = #{query.status} 
+            </if>
+            <if test="query.startTime != null and query.startTime != ''"> 
+                AND create_time >= #{query.startTime} 
+            </if>
+            <if test="query.endTime != null and query.endTime != ''"> 
+                AND create_time &lt;= #{query.endTime} 
+            </if>
+        </where>
+    </select>
+
 </mapper>

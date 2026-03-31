@@ -2,6 +2,7 @@ package eden.mapper;
 
 import eden.pojo.Product;
 import eden.pojo.dto.ProductQueryDTO;
+import eden.pojo.dto.AdminProductQueryDTO;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
@@ -39,6 +40,16 @@ public interface ProductMapper {
      * 根据分类ID查询商品
      */
     List<Product> selectByCategoryId(@Param("categoryId") Long categoryId);
+
+    /**
+     * 后台：全量查询商品列表（不受状态=1限制）
+     */
+    List<Product> selectAdminList(AdminProductQueryDTO query);
+
+    /**
+     * 后台：统计全量查询商品总数
+     */
+    long countAdminList(AdminProductQueryDTO query);
 
     /**
      * 插入商品

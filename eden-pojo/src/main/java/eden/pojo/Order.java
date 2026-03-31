@@ -49,8 +49,14 @@ public class Order implements Serializable {
     /** 发货时间 */
     private LocalDateTime shipTime;
 
-    /** 收货时间 */
+    /** 获取时间 */
     private LocalDateTime receiveTime;
+
+    /** 物流公司 */
+    private String deliveryCompany;
+
+    /** 物流单号 */
+    private String deliverySn;
 
     /** 收货人姓名 */
     private String receiverName;

@@ -3,14 +3,20 @@ package eden.service.listener;
 import eden.common.constant.MQConstants;
 import eden.common.constant.OrderConstants;
 import eden.mapper.OrderMapper;
+import eden.mapper.OrderItemMapper;
 import eden.pojo.Order;
+import eden.pojo.OrderItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 订单消息监听器
@@ -22,6 +28,12 @@ public class OrderMessageListener {
 
     @Autowired
     private OrderMapper orderMapper;
+
+    @Autowired
+    private OrderItemMapper orderItemMapper;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 监听订单创建消息
@@ -72,7 +84,22 @@ public class OrderMessageListener {
 
             logger.info("订单自动取消成功，订单ID: {}", orderId);
 
-            // TODO: 恢复库存（发送库存回滚消息）
+            // 恢复库存（发送库存回滚消息）
+            List<OrderItem> orderItems = orderItemMapper.selectByOrderId(order.getId());
+            if (orderItems != null && !orderItems.isEmpty()) {
+                for (OrderItem item : orderItems) {
+                    Map<String, Object> message = new HashMap<>();
+                    message.put("productId", item.getProductId());
+                    message.put("quantity", item.getQuantity());
+                    
+                    rabbitTemplate.convertAndSend(
+                            MQConstants.STOCK_EXCHANGE,
+                            MQConstants.STOCK_ROLLBACK_ROUTING_KEY,
+                            message
+                    );
+                    logger.info("发送库存回滚消息成功，商品ID: {}, 数量: {}", item.getProductId(), item.getQuantity());
+                }
+            }
 
         } catch (Exception e) {
             logger.error("处理订单取消消息失败，订单ID: {}", orderId, e);

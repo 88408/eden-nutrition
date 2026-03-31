@@ -8,6 +8,8 @@ import eden.pojo.Product;
 import eden.pojo.dto.ProductQueryDTO;
 import eden.pojo.vo.PageVO;
 import eden.service.ProductService;
+import eden.pojo.dto.ProductSaveDTO;
+import eden.pojo.dto.AdminProductQueryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -254,5 +256,78 @@ public class ProductServiceImpl implements ProductService {
     private void clearProductCache() {
         redisTemplate.delete(RedisConstants.PRODUCT_HOT);
         redisTemplate.delete(RedisConstants.PRODUCT_NEW);
+    }
+
+    @Override
+    public PageVO<Product> getAdminProductPage(AdminProductQueryDTO queryDTO) {
+        if (queryDTO.getPageNum() == null || queryDTO.getPageNum() < 1) {
+            queryDTO.setPageNum(1);
+        }
+        if (queryDTO.getPageSize() == null || queryDTO.getPageSize() < 1) {
+            queryDTO.setPageSize(10);
+        }
+
+        int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
+        queryDTO.setOffset(offset);
+
+        List<Product> products = productMapper.selectAdminList(queryDTO);
+        long total = productMapper.countAdminList(queryDTO);
+
+        return PageVO.of(products, total, queryDTO.getPageNum(), queryDTO.getPageSize());
+    }
+
+    @Override
+    public Product getAdminById(Long id) {
+        Product product = productMapper.selectById(id);
+        if (product == null) {
+            throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
+        }
+        return product;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveProduct(ProductSaveDTO dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setSubtitle(dto.getSubtitle());
+        product.setCategoryId(dto.getCategoryId());
+        product.setMainImage(dto.getMainImage());
+        product.setSubImages(dto.getSubImages());
+        product.setDetail(dto.getDetail());
+        product.setOriginalPrice(dto.getOriginalPrice());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock() != null ? dto.getStock() : 0);
+        product.setIsHot(dto.getIsHot() != null ? dto.getIsHot() : 0);
+        product.setIsNew(dto.getIsNew() != null ? dto.getIsNew() : 0);
+        product.setStatus(dto.getStatus() != null ? dto.getStatus() : 0);
+        product.setSales(0);
+
+        this.add(product);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateProduct(ProductSaveDTO dto) {
+        if (dto.getId() == null) {
+            throw new BusinessException(ResultCode.PARAM_ERROR);
+        }
+
+        Product product = new Product();
+        product.setId(dto.getId());
+        product.setName(dto.getName());
+        product.setSubtitle(dto.getSubtitle());
+        product.setCategoryId(dto.getCategoryId());
+        product.setMainImage(dto.getMainImage());
+        product.setSubImages(dto.getSubImages());
+        product.setDetail(dto.getDetail());
+        product.setOriginalPrice(dto.getOriginalPrice());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock());
+        product.setIsHot(dto.getIsHot());
+        product.setIsNew(dto.getIsNew());
+        product.setStatus(dto.getStatus());
+
+        this.update(product);
     }
 }
