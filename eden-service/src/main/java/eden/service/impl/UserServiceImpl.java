@@ -70,20 +70,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginVO login(LoginDTO loginDTO) {
+        return processLogin(loginDTO, "USER");
+    }
+
+    @Override
+    public LoginVO adminLogin(LoginDTO loginDTO) {
+        return processLogin(loginDTO, "ADMIN");
+    }
+
+    private LoginVO processLogin(LoginDTO loginDTO, String expectedRole) {
         // 检查登录失败次数
         String failKey = RedisConstants.USER_LOGIN_FAIL + loginDTO.getUsername();
-        Integer failCount = (Integer) redisTemplate.opsForValue().get(failKey);
+        Integer failCount = (Integer) redisTemplate.opsForValue().get(failKey); 
         if (failCount != null && failCount >= 5) {
-            throw new BusinessException("登录失败次数过多，请30分钟后再试");
+            throw new BusinessException("登录失败次数过多，请30分钟后再试");    
         }
 
         // 查询用户
-        User user = userMapper.selectByUsername(loginDTO.getUsername());
+        User user = userMapper.selectByUsername(loginDTO.getUsername());        
         if (user == null) {
             incrementLoginFail(failKey);
-            throw new BusinessException(ResultCode.USERNAME_OR_PASSWORD_ERROR);
+            throw new BusinessException(ResultCode.USERNAME_OR_PASSWORD_ERROR); 
         }
 
+        // 验证角色
+        if (expectedRole != null && !expectedRole.equals(user.getRole())) {
+            incrementLoginFail(failKey);
+            if ("ADMIN".equals(expectedRole)) {
+                throw new BusinessException("后台管理系统仅允许管理员登录");
+            } else {
+                throw new BusinessException("普通用户入口，禁止管理员登录");
+            }        }
         // 验证密码
         if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             incrementLoginFail(failKey);

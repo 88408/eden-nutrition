@@ -1,0 +1,210 @@
+Eden 商家后台管理系统 API 文档 (v1.0)
+基础路径: https://api.eden-store.com/v1
+内容类型: application/json
+认证方式: Authorization: Bearer <token>
+基础路径：https://api.eden-store.com/v1
+
+1. 认证模块 (Auth)
+1.1 用户登录
+接口: POST /auth/login
+接口 ： POST /auth/login
+
+描述: 用户通过用户名和密码登录系统。
+请求体:
+code
+JSON
+{
+  "username": "admin",
+  "password": "password123"
+}
+响应体:
+code
+JSON
+{
+  "token": "mock-jwt-token-123",
+  "user": {
+    "id": "1",
+    "username": "admin",
+    "role": "admin",
+    "avatar": "https://..."
+  }
+}
+2. 仪表盘模块 (Dashboard)
+2.1 获取统计概览
+接口: GET /dashboard/stats
+接口 ： GET /dashboard/stats
+
+描述: 获取首页四个核心统计指标。
+响应体:
+code
+JSON
+{
+  "totalSales": 128430.00,
+  "orderCount": 1458,
+  "customerCount": 892,
+  "activeUsers": 45
+}
+2.2 获取销售趋势图表
+接口: GET /dashboard/charts/sales-trend
+接口 ： GET /dashboard/charts/sales-trend
+
+描述: 获取过去 7 天的销售额和订单量趋势。
+响应体:
+code
+JSON
+[
+  { "name": "周一", "sales": 4000, "orders": 240 },
+  { "name": "周二", "sales": 3000, "orders": 198 }
+]
+2.3 获取分类销售分布
+接口: GET /dashboard/charts/category-distribution
+接口 ： GET /dashboard/charts/category-distribution
+
+描述: 获取各分类销售占比。
+响应体:
+code
+JSON
+[
+  { "name": "运动营养", "value": 400 },
+  { "name": "基础营养", "value": 300 }
+]
+3. 商品管理模块 (Products)
+3.1 获取商品列表
+接口: GET /products
+接口 ： GET /products
+
+参数: keyword (搜索词), page, pageSize
+响应体:
+code
+JSON
+{
+  "list": [
+    {
+      "id": 1,
+      "name": "乳清蛋白粉 5磅",
+      "price": 399.00,
+      "stock": 150,
+      "status": 1,
+      "category": "运动营养",
+      "image": "https://...",
+      "description": "...",
+      "specs": [{ "label": "规格", "value": "5磅" }]
+    }
+  ],
+  "total": 100
+}
+3.2 创建/更新商品
+接口: POST /products (创建) / PUT /products/:id (更新)
+接口 ： POST /products（创建） / PUT /products/：id（更新）
+
+请求体:
+code
+JSON
+{
+  "name": "商品名称",
+  "category": "运动营养",
+  "price": 399.00,
+  "stock": 100,
+  "status": 1,
+  "image": "base64_or_url",
+  "description": "描述文本"
+}
+3.3 批量操作
+接口: POST /products/batch
+接口 ： POST /products/batch
+
+请求体:
+code
+JSON
+{
+  "ids": [1, 2, 3],
+  "action": "delete" | "online" | "offline" | "update",
+  "data": { "price": 299 } // 仅在 action 为 update 时需要
+}
+4. 分类管理模块 (Categories)
+4.1 获取分类树
+接口: GET /categories
+接口 ： GET /categories
+
+描述: 返回所有分类，前端负责构建树状结构。
+响应体:
+code
+JSON
+[
+  { "id": 1, "name": "运动营养", "parentId": 0, "sortOrder": 1, "icon": "dumbbell" },
+  { "id": 2, "name": "蛋白粉", "parentId": 1, "sortOrder": 1, "icon": "" }
+]
+4.2 保存分类
+接口: POST /categories (创建) / PUT /categories/:id (更新)
+接口 ： POST /categories （创建） / PUT /categories/：id （更新）
+
+请求体:
+code
+JSON
+{
+  "name": "分类名称",
+  "parentId": 1,
+  "sortOrder": 2,
+  "icon": "Zap"
+}
+5. 订单管理模块 (Orders)
+5.1 获取订单列表
+接口: GET /orders
+接口 ： GET /orders
+
+参数: keyword, status (全部|待发货|已发货|已完成|已取消)
+响应体:
+code
+JSON
+[
+  {
+    "orderNo": "ORD-20260317-001",
+    "customer": "张三",
+    "phone": "13800138000",
+    "amount": 399.00,
+    "status": "已发货",
+    "createTime": "2026-03-17 10:00:00"
+  }
+]
+5.2 订单发货
+接口: POST /orders/:orderNo/ship
+接口 ： POST /orders/：orderNo/ship
+
+描述: 将订单状态变更为“已发货”。
+6. 秒杀活动模块 (Seckill)
+6.1 获取活动列表
+接口: GET /seckills
+接口 ： GET /seckills
+
+响应体:
+code
+JSON
+[
+  {
+    "id": 1,
+    "productId": 1,
+    "productName": "乳清蛋白粉",
+    "seckillPrice": 299.00,
+    "stock": 50,
+    "startTime": "2026-03-18T10:00",
+    "endTime": "2026-03-18T12:00",
+    "status": "未开始" | "进行中" | "已结束"
+  }
+]
+6.2 发布/删除活动
+接口: POST /seckills/:id/publish (发布) / DELETE /seckills/:id (删除)
+接口 ： POST /seckills/：id/publish （发布） / DELETE /seckills/：id （删除）
+
+7. 数据字典与枚举
+7.1 商品状态 (status)
+1: 上架中 (Online)
+0: 已下架 (Offline)
+7.2 订单状态 (orderStatus)
+待发货: 待处理
+已发货: 运输中
+已完成: 订单结束
+已取消: 用户或系统取消
+说明:
+所有涉及图片的接口，前端目前支持 base64 预览，后端建议返回 URL。
+批量编辑接口建议支持局部更新。
+认证 Token 需在所有请求的 Header 中携带。

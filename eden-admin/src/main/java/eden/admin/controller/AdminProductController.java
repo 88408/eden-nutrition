@@ -1,5 +1,6 @@
 package eden.admin.controller;
 
+import eden.admin.annotation.RequireAdminLogin;
 import eden.common.result.Result;
 import eden.pojo.Product;
 import eden.pojo.dto.AdminProductQueryDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/admin/product")
+@RequireAdminLogin
 public class AdminProductController {
 
     @Autowired
