@@ -53,5 +53,36 @@ public interface SeckillService {
      * 获取秒杀场次列表
      */
     List<eden.pojo.dto.SeckillSessionDTO> getSeckillSessions();
-}
 
+    // ================== B端管理接口 ==================
+
+    /**
+     * B端分页查询活动
+     */
+    eden.pojo.vo.PageVO<eden.pojo.vo.AdminSeckillVO> getAdminPage(eden.pojo.dto.AdminSeckillQueryDTO queryDTO);
+
+    /**
+     * B端获取详情
+     */
+    eden.pojo.vo.AdminSeckillVO getAdminDetail(Long id);
+
+    /**
+     * B端新增秒杀活动
+     */
+    void addAdminSeckill(eden.pojo.dto.AdminSeckillSaveDTO dto);
+
+    /**
+     * B端修改秒杀活动
+     */
+    void updateAdminSeckill(eden.pojo.dto.AdminSeckillSaveDTO dto);
+
+    /**
+     * B端删除秒杀活动
+     */
+    void deleteAdminSeckill(Long id);
+
+    /**
+     * B端强行结束活动
+     */
+    void finishAdminSeckill(Long id);
+}

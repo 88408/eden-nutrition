@@ -27,13 +27,16 @@ public class SeckillProduct implements Serializable {
     /** 库存（兼容字段） */
     private Integer stock;
 
+    /** 每人限购数量 */
+    private Integer limitPerUser;
+
     /** 秒杀开始时间 */
     private LocalDateTime startTime;
 
     /** 秒杀结束时间 */
     private LocalDateTime endTime;
 
-    /** 状态：0-未开始 1-进行中 2-已结束 */
+    /** 状态：0-未开始，1-进行中，2-已结束 */
     private Integer status;
 
     /** 创建时间 */

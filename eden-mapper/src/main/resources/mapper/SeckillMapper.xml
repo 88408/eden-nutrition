@@ -88,4 +88,45 @@
           AND end_time &lt; #{now}
     </update>
 
+
+    <!-- B端: 管理员分页查询秒杀活动列表 (关联商品表) -->
+    <select id="selectAdminPage" resultType="eden.pojo.vo.AdminSeckillVO">
+        SELECT 
+            s.id, s.product_id as productId, s.seckill_price as seckillPrice, 
+            s.stock as stockCount, s.stock as stock, s.limit_per_user as limitPerUser,
+            s.start_time as startTime, s.end_time as endTime, 
+            s.status, s.create_time as createTime, s.update_time as updateTime,
+            p.name as productName, p.main_image as productMainImage, p.price as originalPrice
+        FROM seckill s
+        LEFT JOIN product p ON s.product_id = p.id
+        <where>
+            <if test="productId != null"> AND s.product_id = #{productId} </if>
+            <if test="status != null"> AND s.status = #{status} </if>
+        </where>
+        ORDER BY s.create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- B端: 管理员分页查询秒杀活动总数 -->
+    <select id="countAdminPage" resultType="long">
+        SELECT COUNT(1)
+        FROM seckill s
+        <where>
+            <if test="productId != null"> AND s.product_id = #{productId} </if>
+            <if test="status != null"> AND s.status = #{status} </if>
+        </where>
+    </select>
+
+    <!-- B端: 查询商品在指定时间段内是否有冲突的活动 (未结束的活动有重叠) -->
+    <select id="countOverlappingSeckill" resultType="integer">
+        SELECT COUNT(1)
+        FROM seckill
+        WHERE product_id = #{productId}
+          AND status != 2
+          AND (start_time &lt; #{endTime} AND end_time &gt; #{startTime})
+          <if test="excludeId != null">
+              AND id != #{excludeId}
+          </if>
+    </select>
+
 </mapper>

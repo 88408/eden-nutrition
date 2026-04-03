@@ -28,7 +28,7 @@ public interface SeckillMapper {
     /**
      * 查询时间范围内的秒杀活动
      */
-    List<SeckillProduct> selectByTimeRange(@Param("startTime") LocalDateTime startTime, 
+    List<SeckillProduct> selectByTimeRange(@Param("startTime") LocalDateTime startTime,
                                      @Param("endTime") LocalDateTime endTime);
 
     /**
@@ -50,4 +50,25 @@ public interface SeckillMapper {
      * 更新已结束的秒杀活动状态
      */
     int updateEndedSeckills(@Param("now") LocalDateTime now);
+
+    /**
+     * B端: 管理员分页查询秒杀活动列表 (关联商品表)
+     */
+    List<eden.pojo.vo.AdminSeckillVO> selectAdminPage(@Param("productId") Long productId,
+                                                      @Param("status") Integer status,
+                                                      @Param("offset") int offset,
+                                                      @Param("pageSize") int pageSize);
+
+    /**
+     * B端: 管理员分页查询秒杀活动总数
+     */
+    long countAdminPage(@Param("productId") Long productId, @Param("status") Integer status);
+
+    /**
+     * B端: 查询商品在指定时间段内是否有冲突的活动
+     */
+    int countOverlappingSeckill(@Param("productId") Long productId,
+                                @Param("startTime") LocalDateTime startTime,
+                                @Param("endTime") LocalDateTime endTime,
+                                @Param("excludeId") Long excludeId);
 }

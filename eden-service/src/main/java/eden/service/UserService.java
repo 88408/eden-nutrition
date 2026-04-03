@@ -22,6 +22,11 @@ public interface UserService {
     LoginVO login(LoginDTO loginDTO);
 
     /**
+     * 管理员登录
+     */
+    LoginVO adminLogin(LoginDTO loginDTO);
+
+    /**
      * 用户登出
      */
     void logout(Long userId);

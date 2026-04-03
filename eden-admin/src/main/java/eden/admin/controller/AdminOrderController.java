@@ -1,5 +1,6 @@
 package eden.admin.controller;
 
+import eden.admin.annotation.RequireAdminLogin;
 import eden.common.result.Result;
 import eden.pojo.dto.AdminOrderQueryDTO;
 import eden.pojo.dto.OrderDeliverDTO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/order")
 @Tag(name = "后台业务-订单管理")
+@RequireAdminLogin
 public class AdminOrderController {
 
     @Autowired
