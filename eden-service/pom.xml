@@ -26,6 +26,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- 依赖Pojo模块 -->
+        <dependency>
+            <groupId>eden</groupId>
+            <artifactId>eden-pojo</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- 依赖Common模块 -->
         <dependency>
             <groupId>eden</groupId>
