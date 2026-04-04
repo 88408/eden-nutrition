@@ -72,6 +72,13 @@ public interface OrderMapper {
     int update(Order order);
 
     /**
+     * 更新通用字段
+     * @param order
+     * @return
+     */
+    int updateBasic(Order order);
+
+    /**
      * 更新订单状态
      */
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);

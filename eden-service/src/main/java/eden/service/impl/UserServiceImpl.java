@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         // 检查登录失败次数
         String failKey = RedisConstants.USER_LOGIN_FAIL + loginDTO.getUsername();
         Integer failCount = (Integer) redisTemplate.opsForValue().get(failKey); 
-        if (failCount != null && failCount >= 5) {
+        if (failCount != null && failCount >= 500) {
             throw new BusinessException("登录失败次数过多，请30分钟后再试");    
         }
 

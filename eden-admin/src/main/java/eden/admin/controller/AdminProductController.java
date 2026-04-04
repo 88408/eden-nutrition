@@ -24,7 +24,7 @@ public class AdminProductController {
     /**
      * 获取全量商品分页列表（包含下架商品）
      */
-    @GetMapping("/list")
+    @GetMapping("/page")
     public Result<PageVO<Product>> getAdminProductPage(AdminProductQueryDTO queryDTO) {
         PageVO<Product> pageInfo = productService.getAdminProductPage(queryDTO);
         return Result.success(pageInfo);

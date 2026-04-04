@@ -113,7 +113,7 @@
                 #{payType}, #{status}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, NOW(), NOW())
     </insert>
 
-    <update id="update">
+    <update id="updateBasic">
         UPDATE `order`
         <set>
             <if test="payType != null">pay_type = #{payType},</if>
@@ -218,8 +218,8 @@
             </if>
         </where>
         ORDER BY create_time DESC
-        <if test="query.offset != null and query.limit != null">
-            LIMIT #{query.offset}, #{query.limit}
+        <if test="query.pageSize != null and query.pageSize > 0">
+            LIMIT #{query.offset}, #{query.pageSize}
         </if>
     </select>
 

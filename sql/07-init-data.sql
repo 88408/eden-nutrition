@@ -39,3 +39,9 @@ INSERT INTO `coupon` (`name`, `type`, `value`, `min_amount`, `total_count`, `rem
 ('新人专享50元券', 1, 50.00, 200.00, 1000, 1000, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
 ('满300减30', 1, 30.00, 300.00, 500, 500, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY)),
 ('会员9折券', 2, 0.90, 100.00, 200, 200, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY));
+
+-- 插入秒杀活动 (关联商品1, 2, 3)
+INSERT INTO `seckill` (`product_id`, `seckill_price`, `stock`, `limit_per_user`, `start_time`, `end_time`, `status`) VALUES
+(1, 499.00, 50, 1, DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_ADD(NOW(), INTERVAL 2 HOUR), 1), -- 进行中
+(2, 999.00, 20, 2, DATE_ADD(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 2 DAY), 0),   -- 未开始
+(3, 699.00, 0, 1, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), 2);    -- 已结束

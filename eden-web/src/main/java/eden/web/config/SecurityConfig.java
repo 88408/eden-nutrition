@@ -48,6 +48,7 @@ public class SecurityConfig {
             .authorizeRequests()
             // 允许匿名访问的接口
             .antMatchers("/user/login", "/user/register").permitAll()
+                .antMatchers("/admin/user/login", "/admin/user/register").permitAll()
             // 允许匿名访问订阅接口（前端订阅不需要登录）
             // 使用更通用的匹配，兼容有无 context-path 的情况
             .antMatchers("/subscribe", "/api/subscribe", "/**/subscribe").permitAll()
