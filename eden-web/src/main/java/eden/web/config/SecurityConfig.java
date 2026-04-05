@@ -48,7 +48,7 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
             // 允许匿名访问的接口
-            .antMatchers("/user/login", "/user/register").permitAll()
+            .antMatchers("/user/login", "/user/register", "/admin/user/login").permitAll()
             // Swagger / Knife4j 相关
             .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
             // 静态资源

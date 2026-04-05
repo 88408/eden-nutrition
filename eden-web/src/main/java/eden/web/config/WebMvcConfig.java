@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Web MVC 配置
  */
-@Configuration
+@Configuration("webWebMvcConfig")
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired

@@ -183,22 +183,6 @@
         WHERE id = #{id}
     </update>
 
-    <update id="update" parameterType="eden.pojo.Order">
-        UPDATE `order`
-        <set>
-            <if test="status != null">status = #{status},</if>
-            <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
-            <if test="deliveryCompany != null">delivery_company = #{deliveryCompany},</if>
-            <if test="deliverySn != null">delivery_sn = #{deliverySn},</if>
-            <if test="payTime != null">pay_time = #{payTime},</if>
-            <if test="shipTime != null">ship_time = #{shipTime},</if>
-            <if test="receiveTime != null">receive_time = #{receiveTime},</if>
-            <if test="completeTime != null">complete_time = #{completeTime},</if>
-            <if test="updateTime != null">update_time = #{updateTime},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
     <!-- 管理端：查询订单列表 -->
     <select id="selectAdminOrderList" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/>
