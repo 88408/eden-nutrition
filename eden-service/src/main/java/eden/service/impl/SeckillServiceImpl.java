@@ -221,7 +221,10 @@ public class SeckillServiceImpl implements SeckillService {
         // For simplicity, just load all products
         List<SeckillProduct> products = seckillProductMapper.selectUpcoming(); // Or query all valid
         for (SeckillProduct p : products) {
-            redisTemplate.opsForValue().set(RedisConstants.SECKILL_STOCK + p.getId(), p.getStockCount());
+            Integer stock = p.getStock() != null ? p.getStock() : p.getStockCount();
+            if (stock != null) {
+                redisTemplate.opsForValue().set(RedisConstants.SECKILL_STOCK + p.getId(), stock);
+            }
         }
     }
 
@@ -240,7 +243,7 @@ public class SeckillServiceImpl implements SeckillService {
 
     @Override
     public AdminSeckillVO getAdminDetail(Long id) {
-        SeckillProduct product = seckillProductMapper.selectById(id);
+        SeckillProduct product = seckillMapper.selectById(id);
         if (product == null) {
             return null;
         }
@@ -264,10 +267,11 @@ public class SeckillServiceImpl implements SeckillService {
 
         SeckillProduct sp = new SeckillProduct();
         BeanUtils.copyProperties(dto, sp);
+        sp.setStock(dto.getStockCount());
         sp.setCreateTime(LocalDateTime.now());
         sp.setUpdateTime(LocalDateTime.now());
         sp.setStatus(0); // 默认未开始
-        seckillProductMapper.insert(sp);
+        seckillMapper.insert(sp);
     }
 
     @Override
@@ -285,27 +289,33 @@ public class SeckillServiceImpl implements SeckillService {
 
         SeckillProduct sp = new SeckillProduct();
         BeanUtils.copyProperties(dto, sp);
+        if (dto.getStockCount() != null) {
+            sp.setStock(dto.getStockCount());
+        }
         sp.setUpdateTime(LocalDateTime.now());
-        seckillProductMapper.update(sp);
+        seckillMapper.update(sp);
 
         redisTemplate.opsForValue().set(RedisConstants.SECKILL_STOCK + sp.getId(), sp.getStockCount());
     }
 
     @Override
     public void deleteAdminSeckill(Long id) {
-        seckillProductMapper.updateStatus(id, 2); // mark as ended/deleted
+        SeckillProduct tempSp = new SeckillProduct();
+        tempSp.setId(id);
+        tempSp.setStatus(2);
+        seckillMapper.update(tempSp); // mark as ended/deleted
         redisTemplate.delete(RedisConstants.SECKILL_STOCK + id);
         redisTemplate.delete(RedisConstants.SECKILL_USER + id);
     }
 
     @Override
     public void finishAdminSeckill(Long id) {
-        SeckillProduct product = seckillProductMapper.selectById(id);
+        SeckillProduct product = seckillMapper.selectById(id);
         if (product != null) {
             product.setEndTime(LocalDateTime.now());
             product.setStatus(2); // 结束
             product.setUpdateTime(LocalDateTime.now());
-            seckillProductMapper.update(product);
+            seckillMapper.update(product);
 
             // 清理缓存
             redisTemplate.delete(RedisConstants.SECKILL_STOCK + id);

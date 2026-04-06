@@ -110,21 +110,21 @@ public class OrderMessageListener {
      * 监听订单支付成功消息
      */
     @RabbitListener(queues = MQConstants.ORDER_PAY_SUCCESS_QUEUE)
-    public void handleOrderPaySuccess(String orderId) {
-        logger.info("收到订单支付成功消息，订单ID: {}", orderId);
+    public void handleOrderPaySuccess(String orderNo) {
+        logger.info("收到订单支付成功消息，订单号: {}", orderNo);
         try {
-            Order order = orderMapper.selectById(Long.parseLong(orderId));
+            Order order = orderMapper.selectByOrderNo(orderNo);
             if (order == null) {
-                logger.warn("订单不存在，订单ID: {}", orderId);
+                logger.warn("订单不存在，订单号: {}", orderNo);
                 return;
             }
 
             // 可以在这里添加支付成功后的异步处理逻辑
             // 如：发送支付成功通知、更新销量统计等
-            logger.info("订单 {} 支付成功，金额: {}", orderId, order.getPayAmount());
+            logger.info("订单 {} 支付成功，金额: {}", orderNo, order.getPayAmount());
 
         } catch (Exception e) {
-            logger.error("处理订单支付成功消息失败，订单ID: {}", orderId, e);
+            logger.error("处理订单支付成功消息失败，订单号: {}", orderNo, e);
         }
     }
 }
