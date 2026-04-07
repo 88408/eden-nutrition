@@ -16,6 +16,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/admin/**") // 拦截所有管理后台接口
-                .excludePathPatterns("/admin/user/login"); // 排除登录接口
+                .excludePathPatterns(
+                        "/admin/user/login", // 排除登录接口
+                        "/admin/dashboard/stats", // 暂时放行仪表盘概况
+                        "/admin/dashboard/sales"  // 暂时放行销售额接口
+                );
     }
 }

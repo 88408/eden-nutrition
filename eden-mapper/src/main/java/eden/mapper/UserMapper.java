@@ -53,4 +53,9 @@ public interface UserMapper {
      * 统计用户总数
      */
     long count();
+
+    /**
+     * 根据时间范围统计用户总数
+     */
+    long countByDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

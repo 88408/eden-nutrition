@@ -88,4 +88,17 @@
     <select id="count" resultType="long">
         SELECT COUNT(*) FROM user
     </select>
+
+    <!-- 根据时间范围统计用户总数 -->
+    <select id="countByDate" resultType="long">
+        SELECT COUNT(*) FROM user
+        <where>
+            <if test="startDate != null">
+                AND create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
 </mapper>
