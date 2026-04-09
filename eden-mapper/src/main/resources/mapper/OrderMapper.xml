@@ -144,7 +144,7 @@
     <select id="sumPayAmount" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(pay_amount), 0)
         FROM `order`
-        WHERE status IN (1, 2, 3, 4)
+        WHERE status IN (1, 2, 3)
         <if test="startDate != null">
             AND create_time &gt;= #{startDate}
         </if>

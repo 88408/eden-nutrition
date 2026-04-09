@@ -123,9 +123,12 @@ public class DashboardServiceImpl implements DashboardService {
 
     private String calculateChange(double today, double yesterday) {
         if (yesterday == 0) {
-            return "+100%";
+            if (today == 0) {
+                return "0.0%";
+            }
+            return String.format("+%.1f%%", today * 100.0);
         }
-        double change = (today - yesterday) / yesterday * 100;
+        double change = (today - yesterday) / yesterday * 100.0;
         String sign = change >= 0 ? "+" : "";
         return String.format("%s%.1f%%", sign, change);
     }
