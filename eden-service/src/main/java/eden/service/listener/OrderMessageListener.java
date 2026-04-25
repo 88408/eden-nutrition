@@ -91,7 +91,7 @@ public class OrderMessageListener {
                     Map<String, Object> message = new HashMap<>();
                     message.put("productId", item.getProductId());
                     message.put("quantity", item.getQuantity());
-                    
+
                     rabbitTemplate.convertAndSend(
                             MQConstants.STOCK_EXCHANGE,
                             MQConstants.STOCK_ROLLBACK_ROUTING_KEY,
