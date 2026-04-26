@@ -27,7 +27,18 @@ public class AdminOrderController {
 
     @GetMapping("/list")
     @Operation(summary = "分页查询订单")
-    public Result<PageVO<OrderAdminVO>> list(AdminOrderQueryDTO queryDTO) {
+    public Result<PageVO<OrderAdminVO>> list(
+            @ModelAttribute AdminOrderQueryDTO queryDTO,
+            @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) Integer size) {
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+        queryDTO.setPageNum(page);
+        queryDTO.setPageSize(size);
         PageVO<OrderAdminVO> pageInfo = orderService.getAdminOrderPage(queryDTO);
         return Result.success(pageInfo);
     }

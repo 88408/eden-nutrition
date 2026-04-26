@@ -1,12 +1,14 @@
 package eden.pojo.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 
 /**
  * B端订单查询 DTO
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class AdminOrderQueryDTO extends PageDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 

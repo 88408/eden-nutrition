@@ -13,8 +13,10 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
@@ -89,6 +91,22 @@ public class GlobalExceptionHandler {
     public Result<?> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         logger.warn("缺少请求参数: {}", e.getParameterName());
         return Result.fail(ResultCode.PARAM_ERROR.getCode(), "缺少必要参数: " + e.getParameterName());
+    }
+
+    /**
+     * 处理请求参数类型不匹配异常（@RequestParam / @PathVariable）
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<?> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e,
+                                                               HttpServletRequest request) {
+        logger.warn("参数类型不匹配: uri={}, query={}, name={}, value={}, requiredType={}",
+                request.getRequestURI(),
+                request.getQueryString(),
+                e.getName(),
+                e.getValue(),
+                e.getRequiredType() == null ? "unknown" : e.getRequiredType().getSimpleName());
+        return Result.fail(ResultCode.PARAM_ERROR.getCode(), "参数格式错误: " + e.getName());
     }
 
     /**

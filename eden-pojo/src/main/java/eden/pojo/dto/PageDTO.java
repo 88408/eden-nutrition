@@ -20,10 +20,29 @@ public class PageDTO {
     /** 排序方式：asc/desc */
     private String orderDir = "desc";
 
+    /** 分页偏移量 */
+    private Integer offset;
+
+    /** 分页大小（limit） */
+    private Integer limit;
+
     /**
      * 获取偏移量
      */
     public int getOffset() {
+        if (offset != null) {
+            return offset;
+        }
         return (pageNum - 1) * pageSize;
+    }
+
+    /**
+     * 获取分页大小
+     */
+    public int getLimit() {
+        if (limit != null) {
+            return limit;
+        }
+        return pageSize;
     }
 }
