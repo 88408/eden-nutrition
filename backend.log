@@ -1,0 +1,101 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+2026-04-27 00:06:53.560  INFO 15820 --- [           main] eden.EdenApplication                     : Starting EdenApplication v1.0-SNAPSHOT using Java 17.0.12 on limz with PID 15820 (D:\project\eden-nutrition\eden-admin\target\eden-admin-1.0-SNAPSHOT.jar started by 28391 in D:\project\eden-nutrition)
+2026-04-27 00:06:53.577 DEBUG 15820 --- [           main] eden.EdenApplication                     : Running with Spring Boot v2.7.18, Spring v5.3.31
+2026-04-27 00:06:53.579  INFO 15820 --- [           main] eden.EdenApplication                     : The following 1 profile is active: "dev"
+2026-04-27 00:06:56.107  INFO 15820 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-04-27 00:06:56.115  INFO 15820 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-04-27 00:06:56.162  INFO 15820 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 20 ms. Found 0 Redis repository interfaces.
+2026-04-27 00:06:56.445 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/CategoryMapper.class]
+2026-04-27 00:06:56.447 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/CouponMapper.class]
+2026-04-27 00:06:56.447 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/OperationLogMapper.class]
+2026-04-27 00:06:56.447 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/OrderItemMapper.class]
+2026-04-27 00:06:56.448 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/OrderMapper.class]
+2026-04-27 00:06:56.448 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/ProductMapper.class]
+2026-04-27 00:06:56.449 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/ProductReviewMapper.class]
+2026-04-27 00:06:56.449 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/SeckillMapper.class]
+2026-04-27 00:06:56.450 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/SeckillOrderMapper.class]
+2026-04-27 00:06:56.451 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/SeckillProductMapper.class]
+2026-04-27 00:06:56.451 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/UserAddressMapper.class]
+2026-04-27 00:06:56.451 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/UserCouponMapper.class]
+2026-04-27 00:06:56.452 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/eden/mapper/UserMapper.class]
+2026-04-27 00:06:56.456 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'categoryMapper' and 'eden.mapper.CategoryMapper' mapperInterface
+2026-04-27 00:06:56.462 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'categoryMapper'.
+2026-04-27 00:06:56.463 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'couponMapper' and 'eden.mapper.CouponMapper' mapperInterface
+2026-04-27 00:06:56.464 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'couponMapper'.
+2026-04-27 00:06:56.464 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'operationLogMapper' and 'eden.mapper.OperationLogMapper' mapperInterface
+2026-04-27 00:06:56.465 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'operationLogMapper'.
+2026-04-27 00:06:56.465 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'orderItemMapper' and 'eden.mapper.OrderItemMapper' mapperInterface
+2026-04-27 00:06:56.466 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'orderItemMapper'.
+2026-04-27 00:06:56.466 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'orderMapper' and 'eden.mapper.OrderMapper' mapperInterface
+2026-04-27 00:06:56.467 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'orderMapper'.
+2026-04-27 00:06:56.467 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'productMapper' and 'eden.mapper.ProductMapper' mapperInterface
+2026-04-27 00:06:56.470 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'productMapper'.
+2026-04-27 00:06:56.471 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'productReviewMapper' and 'eden.mapper.ProductReviewMapper' mapperInterface
+2026-04-27 00:06:56.472 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'productReviewMapper'.
+2026-04-27 00:06:56.472 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'seckillMapper' and 'eden.mapper.SeckillMapper' mapperInterface
+2026-04-27 00:06:56.473 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'seckillMapper'.
+2026-04-27 00:06:56.474 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'seckillOrderMapper' and 'eden.mapper.SeckillOrderMapper' mapperInterface
+2026-04-27 00:06:56.474 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'seckillOrderMapper'.
+2026-04-27 00:06:56.474 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'seckillProductMapper' and 'eden.mapper.SeckillProductMapper' mapperInterface
+2026-04-27 00:06:56.475 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'seckillProductMapper'.
+2026-04-27 00:06:56.475 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userAddressMapper' and 'eden.mapper.UserAddressMapper' mapperInterface
+2026-04-27 00:06:56.476 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userAddressMapper'.
+2026-04-27 00:06:56.477 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userCouponMapper' and 'eden.mapper.UserCouponMapper' mapperInterface
+2026-04-27 00:06:56.477 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userCouponMapper'.
+2026-04-27 00:06:56.478 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userMapper' and 'eden.mapper.UserMapper' mapperInterface
+2026-04-27 00:06:56.478 DEBUG 15820 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userMapper'.
+2026-04-27 00:06:59.483  INFO 15820 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-04-27 00:06:59.515  INFO 15820 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-27 00:06:59.515  INFO 15820 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.109]
+2026-04-27 00:06:59.632  INFO 15820 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-04-27 00:06:59.633  INFO 15820 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5932 ms
+Logging initialized using 'class org.apache.ibatis.logging.stdout.StdOutImpl' adapter.
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/CategoryMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/CouponMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/OperationLogMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/OrderItemMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/OrderMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/ProductMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/ProductReviewMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/SeckillMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/SeckillOrderMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/SeckillProductMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/UserAddressMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/UserCouponMapper.xml]'
+Parsed mapper file: 'URL [jar:file:/D:/project/eden-nutrition/eden-admin/target/eden-admin-1.0-SNAPSHOT.jar!/BOOT-INF/lib/eden-mapper-1.0-SNAPSHOT.jar!/mapper/UserMapper.xml]'
+2026-04-27 00:07:02.445  INFO 15820 --- [           main] org.redisson.Version                     : Redisson 3.19.3
+2026-04-27 00:07:03.096  INFO 15820 --- [isson-netty-2-6] o.r.c.pool.MasterPubSubConnectionPool    : 1 connections initialized for localhost/127.0.0.1:6379
+2026-04-27 00:07:03.186  INFO 15820 --- [sson-netty-2-20] o.r.c.pool.MasterConnectionPool          : 24 connections initialized for localhost/127.0.0.1:6379
+2026-04-27 00:07:03.677 DEBUG 15820 --- [           main] e.w.filter.JwtAuthenticationTokenFilter  : Filter 'jwtAuthenticationTokenFilter' configured for use
+2026-04-27 00:07:06.815  INFO 15820 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 14 endpoint(s) beneath base path '/actuator'
+2026-04-27 00:07:07.534  INFO 15820 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@3c66b7d8, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@37e69c43, org.springframework.security.web.context.SecurityContextPersistenceFilter@76e9f00b, org.springframework.security.web.header.HeaderWriterFilter@63cf9de0, org.springframework.security.web.authentication.logout.LogoutFilter@5b9499fe, eden.web.filter.JwtAuthenticationTokenFilter@10fbbdb, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6f1b8544, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@51dae791, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5c7dfc05, org.springframework.security.web.session.SessionManagementFilter@949c598, org.springframework.security.web.access.ExceptionTranslationFilter@3a1706e1, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@3e36b7a0]
+2026-04-27 00:07:09.235  WARN 15820 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'; nested exception is org.springframework.boot.web.server.PortInUseException: Port 8080 is already in use
+2026-04-27 00:07:09.337  INFO 15820 --- [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-04-27 00:07:09.366  WARN 15820 --- [           main] o.a.c.loader.WebappClassLoaderBase       : The web application [api] appears to have started a thread named [Thread-1] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.12/sun.net.dns.ResolverConfigurationImpl.notifyAddrChange0(Native Method)
+ java.base@17.0.12/sun.net.dns.ResolverConfigurationImpl$AddressChangeListener.run(ResolverConfigurationImpl.java:176)
+2026-04-27 00:07:09.387  INFO 15820 --- [           main] ConditionEvaluationReportLoggingListener : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2026-04-27 00:07:09.452 ERROR 15820 --- [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+

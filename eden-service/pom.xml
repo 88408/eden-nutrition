@@ -52,15 +52,34 @@
         </dependency>
 
         <!-- Spring Data Redis -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Redisson -->
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
+            <!-- 版本号从父 POM 继承 -->
+            <exclusions>
+                <!-- ❌ 排除自动选择的错误模块（-32 与 2.7.18 不兼容） -->
+                <exclusion>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson-spring-data-32</artifactId>
+                </exclusion>
+                <!-- 可选：排除其他可能的冲突模块 -->
+                <exclusion>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson-spring-data-30</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-27</artifactId>
+            <version>3.27.2</version>  <!-- 与 starter 版本一致 -->
         </dependency>
 
         <!-- Spring Security Crypto -->
