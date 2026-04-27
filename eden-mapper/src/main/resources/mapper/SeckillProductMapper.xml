@@ -46,8 +46,8 @@
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO seckill_product (product_id, seckill_price, stock, start_time, end_time, status, create_time, update_time)
-        VALUES (#{productId}, #{seckillPrice}, #{stock}, #{startTime}, #{endTime}, #{status}, NOW(), NOW())
+        INSERT INTO seckill (product_id, seckill_price, stock, limit_per_user, start_time, end_time, status, create_time, update_time)
+        VALUES (#{productId}, #{seckillPrice}, #{stock}, #{limitPerUser}, #{startTime}, #{endTime}, #{status}, NOW(), NOW())
     </insert>
 
     <update id="update">

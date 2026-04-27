@@ -1,6 +1,9 @@
 package eden.pojo.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -24,12 +27,17 @@ public class AdminSeckillSaveDTO {
     /**
      * 秒杀库存量
      */
-    private Integer stockCount;
+    @JsonAlias("stockCount")
+    @NotNull(message = "秒杀库存不能为空")
+    @Min(value = 1, message = "库存必须大于 0")
+    private Integer stock = 100;
 
     /**
      * 每人限购数量
      */
-    private Integer limitPerUser;
+    @NotNull(message = "每人限购数量不能为空")
+    @Min(value = 1, message = "每人限购数量必须大于 0")
+    private Integer limitPerUser = 1;
 
     /**
      * 秒杀开始时间

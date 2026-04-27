@@ -114,6 +114,9 @@
         SELECT <include refid="Base_Column_List"/>
         FROM product
         <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
             <if test="categoryId != null">
                 AND category_id = #{categoryId}
             </if>
@@ -133,6 +136,9 @@
         SELECT COUNT(id)
         FROM product
         <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
             <if test="categoryId != null">
                 AND category_id = #{categoryId}
             </if>

@@ -24,8 +24,18 @@ public class AdminProductController {
     /**
      * 获取全量商品分页列表（包含下架商品）
      */
-    @GetMapping("/list")
-    public Result<PageVO<Product>> getAdminProductPage(AdminProductQueryDTO queryDTO) {
+    @GetMapping({"/list", "/page"})
+    public Result<PageVO<Product>> getAdminProductPage(
+            @ModelAttribute AdminProductQueryDTO queryDTO,
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "page", defaultValue = "1", required = false) Integer page) {
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        queryDTO.setPageNum(page);
+        if (id != null && id > 0) {
+            queryDTO.setId(id);
+        }
         PageVO<Product> pageInfo = productService.getAdminProductPage(queryDTO);
         return Result.success(pageInfo);
     }

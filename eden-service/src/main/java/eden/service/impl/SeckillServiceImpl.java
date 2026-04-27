@@ -251,6 +251,10 @@ public class SeckillServiceImpl implements SeckillService {
 
     @Override
     public void addAdminSeckill(AdminSeckillSaveDTO dto) {
+        if (dto.getStock() == null || dto.getStock() < 1) {
+            throw new BusinessException("秒杀库存必须为正整数");
+        }
+
         // 校验排期重叠
         int count = seckillMapper.countOverlappingSeckill(
                 dto.getProductId(),
@@ -264,6 +268,8 @@ public class SeckillServiceImpl implements SeckillService {
 
         SeckillProduct sp = new SeckillProduct();
         BeanUtils.copyProperties(dto, sp);
+        sp.setStock(dto.getStock());
+        sp.setStockCount(dto.getStock());
         sp.setCreateTime(LocalDateTime.now());
         sp.setUpdateTime(LocalDateTime.now());
         sp.setStatus(0); // 默认未开始
@@ -272,6 +278,10 @@ public class SeckillServiceImpl implements SeckillService {
 
     @Override
     public void updateAdminSeckill(AdminSeckillSaveDTO dto) {
+        if (dto.getStock() == null || dto.getStock() < 1) {
+            throw new BusinessException("秒杀库存必须为正整数");
+        }
+
         // 校验排期重叠（排除自身）
         int count = seckillMapper.countOverlappingSeckill(
                 dto.getProductId(),
@@ -285,6 +295,8 @@ public class SeckillServiceImpl implements SeckillService {
 
         SeckillProduct sp = new SeckillProduct();
         BeanUtils.copyProperties(dto, sp);
+        sp.setStock(dto.getStock());
+        sp.setStockCount(dto.getStock());
         sp.setUpdateTime(LocalDateTime.now());
         seckillProductMapper.update(sp);
 

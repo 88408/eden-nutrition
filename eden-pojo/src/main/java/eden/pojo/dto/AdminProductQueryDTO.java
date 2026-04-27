@@ -10,6 +10,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class AdminProductQueryDTO extends PageDTO {
 
+    /** 商品ID */
+    private Long id;
+
     /** 关键词搜索 (name 或 subtitle) */
     private String keyword;
 

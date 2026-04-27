@@ -9,6 +9,7 @@ import eden.pojo.vo.PageVO;
 import eden.service.SeckillService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,14 +41,14 @@ public class AdminSeckillController {
 
     @ApiOperation("新增秒杀活动")
     @PostMapping
-    public Result<Void> addAdminSeckill(@RequestBody AdminSeckillSaveDTO dto) {
+    public Result<Void> addAdminSeckill(@Valid @RequestBody AdminSeckillSaveDTO dto) {
         seckillService.addAdminSeckill(dto);
         return Result.success();
     }
 
     @ApiOperation("修改秒杀活动")
     @PutMapping
-    public Result<Void> updateAdminSeckill(@RequestBody AdminSeckillSaveDTO dto) {
+    public Result<Void> updateAdminSeckill(@Valid @RequestBody AdminSeckillSaveDTO dto) {
         seckillService.updateAdminSeckill(dto);
         return Result.success();
     }
