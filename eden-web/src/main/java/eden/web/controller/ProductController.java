@@ -6,6 +6,7 @@ import eden.pojo.dto.ProductQueryDTO;
 import eden.pojo.vo.PageVO;
 import eden.pojo.vo.ProductVO;
 import eden.service.ProductService;
+import eden.web.annotation.CurrentUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -137,5 +138,19 @@ public class ProductController {
     public Result<Void> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         productService.updateStatus(id, status);
         return Result.success();
+    }
+
+    @ApiOperation("切换商品收藏状态(收藏/取消)")
+    @PostMapping("/favorite/{id}")
+    public Result<Boolean> toggleFavorite(@CurrentUser Long userId, @PathVariable Long id) {
+        boolean isFavorited = productService.toggleFavorite(userId, id);
+        return Result.success(isFavorited);
+    }
+
+    @ApiOperation("检查商品是否已收藏")
+    @GetMapping("/favorite/check/{id}")
+    public Result<Boolean> checkFavorite(@CurrentUser Long userId, @PathVariable Long id) {
+        boolean isFavorited = productService.isFavorited(userId, id);
+        return Result.success(isFavorited);
     }
 }

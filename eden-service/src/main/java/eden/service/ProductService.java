@@ -91,4 +91,20 @@ public interface ProductService {
      * B端管理后台专用：修改全量商品信息
      */
     void updateProduct(ProductSaveDTO dto);
+
+    /**
+     * 切换商品收藏状态（收藏/取消收藏）
+     * @param userId 用户ID
+     * @param productId 商品ID
+     * @return true: 已收藏, false: 已取消收藏
+     */
+    boolean toggleFavorite(Long userId, Long productId);
+
+    /**
+     * 检查商品是否被用户收藏
+     * @param userId 用户ID
+     * @param productId 商品ID
+     * @return true: 已收藏, false: 未收藏
+     */
+    boolean isFavorited(Long userId, Long productId);
 }

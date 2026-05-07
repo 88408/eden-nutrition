@@ -17,7 +17,6 @@
         <result column="receiver_phone" property="receiverPhone"/>
         <result column="receiver_address" property="receiverAddress"/>
         <result column="remark" property="remark"/>
-        <result column="delivery_company" property="deliveryCompany"/>
         <result column="delivery_sn" property="deliverySn"/>
         <result column="pay_time" property="payTime"/>
         <result column="ship_time" property="shipTime"/>

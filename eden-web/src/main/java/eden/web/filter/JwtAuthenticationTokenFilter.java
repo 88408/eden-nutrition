@@ -29,6 +29,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        if (uri.contains("/user/register") || uri.contains("/user/login") || uri.contains("/admin/user/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = request.getHeader(JwtUtils.TOKEN_HEADER);
         if (StringUtils.hasText(token) && token.startsWith(JwtUtils.TOKEN_PREFIX)) {
             token = token.substring(JwtUtils.TOKEN_PREFIX.length());

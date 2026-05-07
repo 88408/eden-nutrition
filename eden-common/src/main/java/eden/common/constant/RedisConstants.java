@@ -10,6 +10,9 @@ public class RedisConstants {
 
     // ============================= 用户相关 =============================
 
+    /** 用户收藏商品 Set前缀 */
+    public static final String USER_FAVORITES = PREFIX + "user:favorites:";
+
     /** 用户Token前缀 */
     public static final String USER_TOKEN = PREFIX + "user:token:";
 

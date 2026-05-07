@@ -330,4 +330,31 @@ public class ProductServiceImpl implements ProductService {
 
         this.update(product);
     }
+
+    @Override
+    public boolean toggleFavorite(Long userId, Long productId) {
+        // 先检查商品是否存在
+        Product product = productMapper.selectById(productId);
+        if (product == null) {
+            throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
+        }
+
+        String key = RedisConstants.USER_FAVORITES + userId;
+        Boolean isMember = redisTemplate.opsForSet().isMember(key, productId);
+        if (Boolean.TRUE.equals(isMember)) {
+            // 已收藏，执行取消收藏
+            redisTemplate.opsForSet().remove(key, productId);
+            return false;
+        } else {
+            // 未收藏，执行收藏
+            redisTemplate.opsForSet().add(key, productId);
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isFavorited(Long userId, Long productId) {
+        String key = RedisConstants.USER_FAVORITES + userId;
+        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, productId));
+    }
 }

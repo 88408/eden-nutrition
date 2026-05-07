@@ -52,6 +52,9 @@ public class Order implements Serializable {
     /** 获取时间 */
     private LocalDateTime receiveTime;
 
+    /** 完成时间 */
+    private LocalDateTime completeTime;
+
     /** 物流公司 */
     private String deliveryCompany;
 
