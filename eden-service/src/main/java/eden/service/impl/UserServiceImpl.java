@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 用户服务实现类
@@ -245,6 +247,10 @@ public class UserServiceImpl implements UserService {
 
         // 清除用户信息缓存
         redisTemplate.delete(RedisConstants.USER_INFO + userId);
+
+        // 同步用户最新积分到独立的Redis Key
+        String pointsKey = "eden:user:points:" + userId;
+        stringRedisTemplate.opsForValue().set(pointsKey, String.valueOf(newPoints));
     }
 
     @Override
@@ -255,5 +261,40 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByPhone(String phone) {
         return userMapper.selectByPhone(phone) != null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean sign(Long userId) {
+        LocalDate now = LocalDate.now();
+        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        // Key设计：使用特定的前缀拼接用户ID和年月，例如：eden:user:sign:1:202605
+        String key = "eden:user:sign:" + userId + ":" + keySuffix;
+
+        // offset从0开始，所以当月号需要减1
+        int offset = now.getDayOfMonth() - 1;
+
+        // setBit 返回的是执行操作前该位的值。如果是true，说明今天已经签过到了
+        Boolean isSigned = stringRedisTemplate.opsForValue().setBit(key, offset, true);
+        if (Boolean.TRUE.equals(isSigned)) {
+            throw new BusinessException("您今日已经签到过了~");
+        }
+
+        // 签到成功送积分奖励 (示例：送10积分)
+        this.updatePoints(userId, 10);
+
+        return true;
+    }
+
+    @Override
+    public boolean checkSign(Long userId) {
+        LocalDate now = LocalDate.now();
+        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String key = "eden:user:sign:" + userId + ":" + keySuffix;
+        int offset = now.getDayOfMonth() - 1;
+
+        // 查询今天对应位是否为 1
+        Boolean isSigned = stringRedisTemplate.opsForValue().getBit(key, offset);
+        return Boolean.TRUE.equals(isSigned);
     }
 }

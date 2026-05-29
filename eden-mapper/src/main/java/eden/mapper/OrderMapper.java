@@ -89,9 +89,11 @@ public interface OrderMapper {
     int cancel(@Param("id") Long id);
 
     /**
-     * 支付订单
+     * 支付订单；限定 status=0，确保支付宝重复通知不会重复触发销量和积分副作用
      */
-    int pay(@Param("id") Long id, @Param("payType") Integer payType);
+    int pay(@Param("id") Long id,
+            @Param("payType") Integer payType,
+            @Param("paymentTradeNo") String paymentTradeNo);
 
     /**
      * 统计销售额（按日期范围）

@@ -1,6 +1,7 @@
 package eden.config;
 
 import eden.common.constant.MQConstants;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,11 +20,13 @@ import java.util.Map;
 public class RabbitMQConfig {
 
     /**
-     * JSON消息转换器
+     * JSON消息转换器。
+     *
+     * 复用应用级 ObjectMapper，确保秒杀订单等消息里的 LocalDateTime 可以被正常序列化。
      */
     @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     /**

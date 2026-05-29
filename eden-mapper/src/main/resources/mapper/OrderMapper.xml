@@ -13,11 +13,13 @@
         <result column="coupon_id" property="couponId"/>
         <result column="pay_type" property="payType"/>
         <result column="status" property="status"/>
+        <result column="order_type" property="orderType"/>
         <result column="receiver_name" property="receiverName"/>
         <result column="receiver_phone" property="receiverPhone"/>
         <result column="receiver_address" property="receiverAddress"/>
         <result column="remark" property="remark"/>
         <result column="delivery_sn" property="deliverySn"/>
+        <result column="payment_trade_no" property="paymentTradeNo"/>
         <result column="pay_time" property="payTime"/>
         <result column="ship_time" property="shipTime"/>
         <result column="receive_time" property="receiveTime"/>
@@ -27,8 +29,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id, pay_type, status,
-        receiver_name, receiver_phone, receiver_address, remark, delivery_company, delivery_sn, pay_time, ship_time, receive_time, complete_time, create_time, update_time
+        id, order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id, pay_type, status, order_type,
+        receiver_name, receiver_phone, receiver_address, remark, delivery_company, delivery_sn, payment_trade_no, pay_time, ship_time, receive_time, complete_time, create_time, update_time
     </sql>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -107,9 +109,9 @@
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO `order` (order_no, user_id, total_amount, pay_amount, freight_amount, discount_amount, coupon_id,
-                            pay_type, status, receiver_name, receiver_phone, receiver_address, remark, create_time, update_time)
+                            pay_type, status, order_type, receiver_name, receiver_phone, receiver_address, remark, create_time, update_time)
         VALUES (#{orderNo}, #{userId}, #{totalAmount}, #{payAmount}, #{freightAmount}, #{discountAmount}, #{couponId},
-                #{payType}, #{status}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, NOW(), NOW())
+                #{payType}, #{status}, #{orderType}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, NOW(), NOW())
     </insert>
 
     <update id="updateBasic">
@@ -136,7 +138,12 @@
     </update>
 
     <update id="pay">
-        UPDATE `order` SET status = 1, pay_type = #{payType}, pay_time = NOW(), update_time = NOW()
+        UPDATE `order`
+        SET status = 1,
+            pay_type = #{payType},
+            payment_trade_no = #{paymentTradeNo},
+            pay_time = NOW(),
+            update_time = NOW()
         WHERE id = #{id} AND status = 0
     </update>
 
@@ -171,6 +178,7 @@
         <set>
             <if test="status != null">status = #{status},</if>
             <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
+            <if test="paymentTradeNo != null">payment_trade_no = #{paymentTradeNo},</if>
             <if test="deliveryCompany != null">delivery_company = #{deliveryCompany},</if>
             <if test="deliverySn != null">delivery_sn = #{deliverySn},</if>
             <if test="payTime != null">pay_time = #{payTime},</if>
@@ -187,6 +195,7 @@
         <set>
             <if test="status != null">status = #{status},</if>
             <if test="paymentMethod != null">pay_type = #{paymentMethod},</if>
+            <if test="paymentTradeNo != null">payment_trade_no = #{paymentTradeNo},</if>
             <if test="deliveryCompany != null">delivery_company = #{deliveryCompany},</if>
             <if test="deliverySn != null">delivery_sn = #{deliverySn},</if>
             <if test="payTime != null">pay_time = #{payTime},</if>

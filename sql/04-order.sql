@@ -17,6 +17,7 @@ CREATE TABLE `order` (
     `coupon_id` BIGINT COMMENT '使用的优惠券ID',
     `pay_type` TINYINT COMMENT '支付方式：1-支付宝 2-微信',
     `payment_method` VARCHAR(50) DEFAULT NULL COMMENT '支付方式',
+    `payment_trade_no` VARCHAR(100) DEFAULT NULL COMMENT '第三方支付交易号',
     `status` TINYINT DEFAULT 0 COMMENT '订单状态：0-待支付 1-已支付 2-已发货 3-已完成 4-已取消 5-已退款',
     `order_type` TINYINT DEFAULT 0 COMMENT '订单类型：0-普通订单 1-秒杀订单 2-团购订单',
     `receiver_name` VARCHAR(50) NOT NULL COMMENT '收货人姓名',
@@ -33,6 +34,7 @@ CREATE TABLE `order` (
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_order_no` (`order_no`),
+    INDEX `idx_payment_trade_no` (`payment_trade_no`),
     INDEX `idx_status` (`status`),
     INDEX `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';

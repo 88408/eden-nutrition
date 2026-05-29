@@ -7,6 +7,7 @@
         <result column="product_id" property="productId"/>
         <result column="seckill_price" property="seckillPrice"/>
         <result column="stock" property="stock"/>
+        <result column="stock" property="stockCount"/>
         <result column="limit_per_user" property="limitPerUser"/>
         <result column="start_time" property="startTime"/>
         <result column="end_time" property="endTime"/>
@@ -37,7 +38,7 @@
     <select id="selectUpcoming" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/>
         FROM seckill
-        WHERE status = 1
+        WHERE status IN (0, 1)
           AND start_time &gt; #{now}
           AND start_time &lt;= DATE_ADD(#{now}, INTERVAL #{hours} HOUR)
         ORDER BY start_time
@@ -46,13 +47,22 @@
     <select id="selectByTimeRange" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/>
         FROM seckill
-        WHERE status = 1
+        WHERE status IN (0, 1)
           AND start_time &gt;= #{startTime}
           AND start_time &lt; #{endTime}
         ORDER BY start_time
     </select>
 
-    <insert id="insert" parameterType="eden.pojo.SeckillProduct">
+    <select id="selectStartableSeckills" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM seckill
+        WHERE status = 0
+          AND start_time &lt;= #{now}
+          AND end_time &gt; #{now}
+        ORDER BY start_time
+    </select>
+
+    <insert id="insert" parameterType="eden.pojo.SeckillProduct" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO seckill (id, product_id, seckill_price, stock, limit_per_user, 
                             start_time, end_time, status, create_time, update_time)
         VALUES (#{id}, #{productId}, #{seckillPrice}, #{stock}, #{limitPerUser},
@@ -81,11 +91,23 @@
           AND stock >= #{quantity}
     </update>
 
+    <!-- 将已到开始时间且未过结束时间的未开始活动推进为进行中，供分钟级定时任务和下单兜底共用。 -->
+    <update id="updateStartedSeckills">
+        UPDATE seckill
+        SET status = 1,
+            update_time = NOW()
+        WHERE status = 0
+          AND start_time &lt;= #{now}
+          AND end_time &gt; #{now}
+    </update>
+
+    <!-- 结束所有已过结束时间的活动，包含未开始但已经错过窗口的异常数据。 -->
     <update id="updateEndedSeckills">
         UPDATE seckill
-        SET status = 0
-        WHERE status = 1
-          AND end_time &lt; #{now}
+        SET status = 2,
+            update_time = NOW()
+        WHERE status IN (0, 1)
+          AND end_time &lt;= #{now}
     </update>
 
 

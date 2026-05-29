@@ -10,6 +10,7 @@ import eden.mapper.OrderItemMapper;
 import eden.mapper.OrderMapper;
 import eden.pojo.*;
 import eden.pojo.dto.OrderCreateDTO;
+import eden.pojo.vo.AlipayDebugPayVO;
 import eden.pojo.vo.CartItemVO;
 import eden.pojo.vo.CartVO;
 import eden.pojo.vo.PageVO;
@@ -21,9 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,6 +62,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired(required = false)
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private AlipayService alipayService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -162,6 +169,7 @@ public class OrderServiceImpl implements OrderService {
             order.setDiscountAmount(discountAmount);
             order.setCouponId(couponId);
             order.setStatus(OrderConstants.STATUS_UNPAID);
+            order.setOrderType(OrderConstants.TYPE_NORMAL);
             order.setReceiverName(address.getReceiverName());
             order.setReceiverPhone(address.getReceiverPhone());
             order.setReceiverAddress(address.getProvince() + address.getCity() + 
@@ -267,7 +275,52 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void payOrder(String orderNo, Integer payType) {
+    public String payOrder(Long userId, String orderNo, Integer payType) {
+        if (!Integer.valueOf(OrderConstants.PAY_TYPE_ALIPAY).equals(payType)) {
+            throw new BusinessException("当前仅支持支付宝沙箱支付");
+        }
+        return createAlipayPayment(userId, orderNo);
+    }
+
+    @Override
+    public String createAlipayPayment(Long userId, String orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        validateOrderCanStartAlipayPay(order, userId);
+        return alipayService.createPagePayForm(order);
+    }
+
+    @Override
+    public AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        validateOrderCanStartAlipayPay(order, userId);
+
+        String token = UUID.randomUUID().toString().replace("-", "");
+        String tokenKey = RedisConstants.ALIPAY_BRIDGE_TOKEN + token;
+        String tokenValue = order.getOrderNo() + ":" + userId;
+        // 微信开发者工具无法直接提交 PagePay form，通过短期 token 换取一次性桥接页，避免把订单号裸露成长期入口。
+        redisTemplate.opsForValue().set(tokenKey, tokenValue, RedisConstants.EXPIRE_ALIPAY_BRIDGE, TimeUnit.SECONDS);
+
+        AlipayDebugPayVO vo = new AlipayDebugPayVO();
+        vo.setOrderNo(order.getOrderNo());
+        vo.setExpireSeconds(RedisConstants.EXPIRE_ALIPAY_BRIDGE);
+        vo.setBridgeUrl(bridgeUrl + "?token=" + token);
+        return vo;
+    }
+
+    @Override
+    public String createAlipayBridgeHtml(String token, String debugReturnUrl) {
+        if (token == null || token.isBlank()) {
+            throw new BusinessException("支付宝调试桥接 token 不能为空");
+        }
+
+        String tokenKey = RedisConstants.ALIPAY_BRIDGE_TOKEN + token;
+        Object value = redisTemplate.opsForValue().get(tokenKey);
+        if (value == null) {
+            throw new BusinessException("支付宝调试桥接 token 已失效，请返回小程序重新发起支付");
+        }
+        redisTemplate.delete(tokenKey);
+
+        String orderNo = value.toString().split(":", 2)[0];
         Order order = orderMapper.selectByOrderNo(orderNo);
         if (order == null) {
             throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
@@ -275,11 +328,88 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() != OrderConstants.STATUS_UNPAID) {
             throw new BusinessException(ResultCode.ORDER_ALREADY_PAID);
         }
+        return wrapAutoSubmitHtml(alipayService.createPagePayForm(order, debugReturnUrl));
+    }
 
-        // 更新订单状态为已支付
-        orderMapper.pay(order.getId(), payType);
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean handleAlipayNotify(Map<String, String> notifyParams) {
+        if (notifyParams == null || notifyParams.isEmpty() || !alipayService.verifyNotify(notifyParams)) {
+            return false;
+        }
+        if (!alipayService.isPaidTrade(notifyParams)) {
+            return false;
+        }
 
-        // 增加商品销量
+        String orderNo = notifyParams.get("out_trade_no");
+        String tradeNo = notifyParams.get("trade_no");
+        String totalAmount = notifyParams.get("total_amount");
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            return false;
+        }
+
+        // 支付宝重复通知可能多次到达，已支付订单直接返回成功，避免支付宝持续重试。
+        if (order.getStatus() == OrderConstants.STATUS_PAID) {
+            return true;
+        }
+        if (order.getStatus() != OrderConstants.STATUS_UNPAID || !isNotifyAmountMatched(order, totalAmount)) {
+            return false;
+        }
+
+        int updated = orderMapper.pay(order.getId(), OrderConstants.PAY_TYPE_ALIPAY, tradeNo);
+        if (updated <= 0) {
+            Order latest = orderMapper.selectByOrderNo(orderNo);
+            return latest != null && latest.getStatus() == OrderConstants.STATUS_PAID;
+        }
+
+        handlePaySuccessSideEffects(order);
+        return true;
+    }
+
+    @Override
+    public String buildAlipayReturnRedirectUrl(String orderNo) {
+        return alipayService.buildReturnRedirectUrl(orderNo);
+    }
+
+    /**
+     * 支付宝发起阶段只校验订单是否可以支付，不做任何状态修改。
+     */
+    private void validateOrderCanStartAlipayPay(Order order, Long userId) {
+        if (order == null) {
+            throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+        if (order.getStatus() != OrderConstants.STATUS_UNPAID) {
+            throw new BusinessException(ResultCode.ORDER_ALREADY_PAID);
+        }
+        if (order.getPayAmount() == null || order.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("订单实付金额异常，无法发起支付宝支付");
+        }
+    }
+
+    /**
+     * 支付宝回调金额必须与订单实付金额完全一致，避免串单或篡改金额造成错账。
+     */
+    private boolean isNotifyAmountMatched(Order order, String totalAmount) {
+        if (totalAmount == null || order.getPayAmount() == null) {
+            return false;
+        }
+        try {
+            BigDecimal notifyAmount = new BigDecimal(totalAmount).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal orderPayAmount = order.getPayAmount().setScale(2, RoundingMode.HALF_UP);
+            return orderPayAmount.compareTo(notifyAmount) == 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * 只有订单状态成功从待支付切到已支付后，才执行销量、积分和 MQ 消息副作用。
+     */
+    private void handlePaySuccessSideEffects(Order order) {
         List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
         for (OrderItem item : items) {
             productService.increaseSales(item.getProductId(), item.getQuantity());
@@ -292,8 +422,21 @@ public class OrderServiceImpl implements OrderService {
         // 发送支付成功消息
         if (rabbitTemplate != null) {
             rabbitTemplate.convertAndSend(MQConstants.ORDER_EXCHANGE, 
-                    MQConstants.ORDER_PAY_SUCCESS_KEY, orderNo);
+                    MQConstants.ORDER_PAY_SUCCESS_KEY, order.getOrderNo());
         }
+    }
+
+    /**
+     * 将支付宝 SDK 生成的表单包进最小 HTML，便于微信小程序 web-view 加载后自动提交。
+     */
+    private String wrapAutoSubmitHtml(String formHtml) {
+        return "<!doctype html><html><head><meta charset=\"utf-8\">"
+                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+                + "<title>正在跳转支付宝沙箱</title></head>"
+                + "<body><p style=\"font-family:sans-serif;color:#666;text-align:center;margin-top:48px;\">正在跳转支付宝沙箱...</p>"
+                + formHtml
+                + "<script>document.addEventListener('DOMContentLoaded',function(){var f=document.forms[0];if(f){f.submit();}});</script>"
+                + "</body></html>";
     }
 
     @Override

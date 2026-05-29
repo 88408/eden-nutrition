@@ -52,6 +52,16 @@ public class SecurityConfig {
             // 允许匿名访问订阅接口（前端订阅不需要登录）
             // 使用更通用的匹配，兼容有无 context-path 的情况
             .antMatchers("/subscribe", "/api/subscribe", "/**/subscribe").permitAll()
+            // 支付宝异步通知和同步返回没有用户登录态，必须通过签名验签保护
+            .antMatchers(
+                    "/order/pay/alipay/notify",
+                    "/order/pay/alipay/return",
+                    "/order/pay/alipay/bridge",
+                    "/order/pay/alipay/weapp-debug-return",
+                    "/api/order/pay/alipay/notify",
+                    "/api/order/pay/alipay/return",
+                    "/api/order/pay/alipay/bridge",
+                    "/api/order/pay/alipay/weapp-debug-return").permitAll()
             // Swagger / Knife4j 相关
             .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
             // 静态资源

@@ -79,6 +79,9 @@ public class Order implements Serializable {
     /** 支付方式 */
     private String paymentMethod;
 
+    /** 支付宝交易号，用于异步通知幂等校验和后续对账 */
+    private String paymentTradeNo;
+
     /** 订单类型：0-普通订单 1-秒杀订单 2-团购订单 */
     private Integer orderType;
 

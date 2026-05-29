@@ -61,6 +61,12 @@ public class RedisConstants {
     /** 秒杀商品列表 */
     public static final String SECKILL_PRODUCTS = PREFIX + "seckill:products";
 
+    /** 秒杀异步处理结果 */
+    public static final String SECKILL_RESULT = PREFIX + "seckill:result:";
+
+    /** 秒杀提交中的订单归属 */
+    public static final String SECKILL_PENDING = PREFIX + "seckill:pending:";
+
     // ============================= 订单相关 =============================
 
     /** 订单超时队列 */
@@ -68,6 +74,9 @@ public class RedisConstants {
 
     /** 订单创建锁 */
     public static final String ORDER_CREATE_LOCK = PREFIX + "order:create:lock:";
+
+    /** 支付宝微信开发者工具调试桥接 token */
+    public static final String ALIPAY_BRIDGE_TOKEN = PREFIX + "alipay:bridge:";
 
     // ============================= 分布式锁 =============================
 
@@ -111,4 +120,10 @@ public class RedisConstants {
 
     /** 登录失败记录过期时间：30分钟 */
     public static final long EXPIRE_LOGIN_FAIL = 30 * 60;
+
+    /** 支付宝调试桥接 token 过期时间：10分钟 */
+    public static final long EXPIRE_ALIPAY_BRIDGE = 10 * 60;
+
+    /** 秒杀异步结果过期时间：30分钟 */
+    public static final long EXPIRE_SECKILL_RESULT = 30 * 60;
 }

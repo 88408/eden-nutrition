@@ -29,7 +29,12 @@ public interface SeckillMapper {
      * 查询时间范围内的秒杀活动
      */
     List<SeckillProduct> selectByTimeRange(@Param("startTime") LocalDateTime startTime,
-                                     @Param("endTime") LocalDateTime endTime);
+                                      @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查询已到开始时间但尚未开始的秒杀活动
+     */
+    List<SeckillProduct> selectStartableSeckills(@Param("now") LocalDateTime now);
 
     /**
      * 插入秒杀活动
@@ -45,6 +50,11 @@ public interface SeckillMapper {
      * 扣减库存
      */
     int deductStock(@Param("id") Long id, @Param("quantity") int quantity);
+
+    /**
+     * 更新已到开始时间的秒杀活动状态
+     */
+    int updateStartedSeckills(@Param("now") LocalDateTime now);
 
     /**
      * 更新已结束的秒杀活动状态

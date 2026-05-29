@@ -19,9 +19,12 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
-      // Backend expects addressId and items (or items are taken from cart backend side?)
-      // Check OrderController. usually createOrder takes addressId and paymentMethod. Items from cart.
-      const res = await createOrder({ addressId: selectedAddressId, items }); 
+      // Create request payload matching OrderCreateDTO requires productIds
+      const productIds = items.map(item => item.productId);
+      const res = await createOrder({
+        addressId: selectedAddressId,
+        productIds: productIds
+      });
       const orderNo = res.orderNo;
       alert(`订单提交成功！订单号: ${orderNo}`);
       // Clear cart locally if needed, but backend should clear it.

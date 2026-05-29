@@ -124,6 +124,18 @@ eden:
   order:
     pay-timeout-minutes: 30
     no-prefix: "EN"
+  # 支付宝沙箱配置：密钥类参数通过环境变量注入，避免将真实私钥写入仓库
+  alipay:
+    app-id: ${ALIPAY_APP_ID:}
+    private-key: ${ALIPAY_PRIVATE_KEY:}
+    alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+    gateway-url: ${ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
+    notify-url: ${ALIPAY_NOTIFY_URL:http://localhost:8080/api/order/pay/alipay/notify}
+    return-url: ${ALIPAY_RETURN_URL:http://localhost:8080/api/order/pay/alipay/return}
+    frontend-return-base-url: ${ALIPAY_FRONTEND_RETURN_BASE_URL:http://localhost:10086}
+    weapp-debug-bridge-base-url: ${ALIPAY_WEAPP_DEBUG_BRIDGE_BASE_URL:http://localhost:8080/api}
+    charset: UTF-8
+    sign-type: RSA2
   # 秒杀配置
   seckill:
     redis-prefix: "seckill:"

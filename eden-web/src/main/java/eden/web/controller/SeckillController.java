@@ -4,6 +4,8 @@ import eden.common.result.Result;
 import eden.pojo.SeckillProduct;
 import eden.pojo.dto.SeckillDTO;
 import eden.pojo.dto.SeckillSessionDTO;
+import eden.pojo.vo.SeckillResultVO;
+import eden.pojo.vo.SeckillSubmitVO;
 import eden.service.SeckillService;
 import eden.web.annotation.CurrentUser;
 import eden.web.annotation.RequireLogin;
@@ -65,9 +67,17 @@ public class SeckillController {
     @ApiOperation("执行秒杀")
     @RequireLogin
     @PostMapping("/do")
-    public Result<String> doSeckill(@CurrentUser Long userId, @Validated @RequestBody SeckillDTO seckillDTO) {
-        String orderNo = seckillService.doSeckill(userId, seckillDTO);
-        return Result.success("秒杀成功", orderNo);
+    public Result<SeckillSubmitVO> doSeckill(@CurrentUser Long userId, @Validated @RequestBody SeckillDTO seckillDTO) {
+        SeckillSubmitVO result = seckillService.doSeckill(userId, seckillDTO);
+        return Result.success("秒杀请求已提交", result);
+    }
+
+    @ApiOperation("查询秒杀处理结果")
+    @RequireLogin
+    @GetMapping("/result/{orderNo}")
+    public Result<SeckillResultVO> getSeckillResult(@CurrentUser Long userId, @PathVariable String orderNo) {
+        SeckillResultVO result = seckillService.getSeckillResult(userId, orderNo);
+        return Result.success(result);
     }
 
     @ApiOperation("检查是否已秒杀")
@@ -95,7 +105,7 @@ public class SeckillController {
     @ApiOperation("发布秒杀活动")
     @PostMapping("/publish/{id}")
     public Result<Void> publishSeckill(@PathVariable Long id) {
-        seckillService.initSeckillStock();
+        seckillService.initSeckillStock(id);
         return Result.success();
     }
 }

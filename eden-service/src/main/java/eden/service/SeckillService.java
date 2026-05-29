@@ -2,6 +2,8 @@ package eden.service;
 
 import eden.pojo.SeckillProduct;
 import eden.pojo.dto.SeckillDTO;
+import eden.pojo.vo.SeckillResultVO;
+import eden.pojo.vo.SeckillSubmitVO;
 import java.util.List;
 
 /**
@@ -22,7 +24,12 @@ public interface SeckillService {
     /**
      * 执行秒杀
      */
-    String doSeckill(Long userId, SeckillDTO seckillDTO);
+    SeckillSubmitVO doSeckill(Long userId, SeckillDTO seckillDTO);
+
+    /**
+     * 查询秒杀异步处理结果
+     */
+    SeckillResultVO getSeckillResult(Long userId, String orderNo);
 
     /**
      * 获取秒杀商品详情
@@ -48,6 +55,11 @@ public interface SeckillService {
      * 初始化秒杀库存到Redis
      */
     void initSeckillStock();
+
+    /**
+     * 初始化指定秒杀活动库存到 Redis
+     */
+    void initSeckillStock(Long id);
 
     /**
      * 获取秒杀场次列表

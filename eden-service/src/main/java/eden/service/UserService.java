@@ -65,4 +65,18 @@ public interface UserService {
      * 检查手机号是否存在
      */
     boolean existsByPhone(String phone);
+
+    /**
+     * 用户签到
+     * @param userId 用户ID
+     * @return 签到结果
+     */
+    boolean sign(Long userId);
+
+    /**
+     * 检查今日是否已签到
+     * @param userId 用户ID
+     * @return true-已签到 false-未签到
+     */
+    boolean checkSign(Long userId);
 }

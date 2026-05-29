@@ -3,6 +3,8 @@ package eden.service;
 import eden.pojo.Order;
 import eden.pojo.dto.OrderCreateDTO;
 import eden.pojo.vo.PageVO;
+import eden.pojo.vo.AlipayDebugPayVO;
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -46,9 +48,34 @@ public interface OrderService {
     void cancelOrder(Long userId, String orderNo);
 
     /**
-     * 支付订单
+     * 兼容旧支付入口，支付宝支付返回沙箱支付表单，不再直接模拟支付成功
      */
-    void payOrder(String orderNo, Integer payType);
+    String payOrder(Long userId, String orderNo, Integer payType);
+
+    /**
+     * 创建支付宝沙箱支付表单
+     */
+    String createAlipayPayment(Long userId, String orderNo);
+
+    /**
+     * 创建微信开发者工具调试用支付宝支付桥接地址
+     */
+    AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl);
+
+    /**
+     * 消费微信调试支付桥接 token，并生成自动提交支付宝沙箱的 HTML
+     */
+    String createAlipayBridgeHtml(String token, String debugReturnUrl);
+
+    /**
+     * 处理支付宝异步通知，验签通过且金额匹配后才更新订单支付状态
+     */
+    boolean handleAlipayNotify(Map<String, String> notifyParams);
+
+    /**
+     * 构造支付宝同步返回后的前端跳转地址
+     */
+    String buildAlipayReturnRedirectUrl(String orderNo);
 
     /**
      * 确认收货

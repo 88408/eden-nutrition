@@ -46,6 +46,8 @@
         <redisson.version>3.18.0</redisson.version>
         <elasticsearch.version>7.17.10</elasticsearch.version>
         <hutool.version>5.8.22</hutool.version>
+        <alipay-sdk.version>4.40.825.ALL</alipay-sdk.version>
+        <lombok.version>1.18.46</lombok.version>
         <jbcrypt.version>0.4</jbcrypt.version>
 
         <!-- Security Fixes -->
@@ -179,6 +181,13 @@
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>
             </dependency>
+
+            <!-- Alipay SDK -->
+            <dependency>
+                <groupId>com.alipay.sdk</groupId>
+                <artifactId>alipay-sdk-java</artifactId>
+                <version>${alipay-sdk.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -209,6 +218,13 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>

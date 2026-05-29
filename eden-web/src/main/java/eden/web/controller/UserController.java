@@ -86,4 +86,28 @@ public class UserController {
         boolean exists = userService.existsByPhone(phone);
         return Result.success(exists);
     }
+
+    @ApiOperation("用户签到")
+    @RequireLogin
+    @PostMapping("/sign")
+    public Result<Void> sign(@CurrentUser Long userId) {
+        userService.sign(userId);
+        return Result.success();
+    }
+
+    @ApiOperation("检查今日是否已签到")
+    @RequireLogin
+    @GetMapping("/sign/check")
+    public Result<Boolean> checkSign(@CurrentUser Long userId) {
+        boolean isSigned = userService.checkSign(userId);
+        return Result.success(isSigned);
+    }
+
+    @ApiOperation("获取当前用户积分")
+    @RequireLogin
+    @GetMapping("/points")
+    public Result<Integer> getUserPoints(@CurrentUser Long userId) {
+        UserVO userVO = userService.getUserById(userId);
+        return Result.success(userVO.getPoints());
+    }
 }
