@@ -60,7 +60,7 @@ public interface OrderService {
     /**
      * 创建微信开发者工具调试用支付宝支付桥接地址
      */
-    AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl);
+    AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl, String debugReturnUrl);
 
     /**
      * 消费微信调试支付桥接 token，并生成自动提交支付宝沙箱的 HTML

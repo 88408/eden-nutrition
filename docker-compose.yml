@@ -6,16 +6,16 @@ services:
     container_name: eden-mysql
     restart: unless-stopped
     environment:
+      TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: eden_db
       MYSQL_USER: eden
       MYSQL_PASSWORD: edenpass
+    command: ["--default-time-zone=+08:00"]
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - /etc/localtime:/etc/localtime:ro  # 添加这两行
-      - /etc/timezone:/etc/timezone:ro    # 添加这两行
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s

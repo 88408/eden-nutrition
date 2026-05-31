@@ -35,7 +35,25 @@ CREATE TABLE `user_coupon` (
     INDEX `idx_coupon_id` (`coupon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户优惠券表';
 
--- 秒杀商品表
+-- 秒杀活动表
+DROP TABLE IF EXISTS `seckill`;
+CREATE TABLE `seckill` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '秒杀ID',
+    `product_id` BIGINT NOT NULL COMMENT '商品ID',
+    `seckill_price` DECIMAL(10, 2) NOT NULL COMMENT '秒杀价格',
+    `stock` INT NOT NULL COMMENT '秒杀库存',
+    `limit_per_user` INT DEFAULT 1 COMMENT '每人限购数量',
+    `start_time` DATETIME NOT NULL COMMENT '秒杀开始时间',
+    `end_time` DATETIME NOT NULL COMMENT '秒杀结束时间',
+    `status` TINYINT DEFAULT 0 COMMENT '状态：0-未开始 1-进行中 2-已结束',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_product_id` (`product_id`),
+    INDEX `idx_start_time` (`start_time`),
+    INDEX `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='秒杀活动表';
+
+-- 秒杀商品兼容表（旧接口仍可能读取该表）
 DROP TABLE IF EXISTS `seckill_product`;
 CREATE TABLE `seckill_product` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '秒杀ID',

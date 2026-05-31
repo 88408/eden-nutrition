@@ -290,7 +290,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl) {
+    public AlipayDebugPayVO createWeappDebugAlipayPayment(Long userId, String orderNo, String bridgeUrl, String debugReturnUrl) {
         Order order = orderMapper.selectByOrderNo(orderNo);
         validateOrderCanStartAlipayPay(order, userId);
 
@@ -304,6 +304,7 @@ public class OrderServiceImpl implements OrderService {
         vo.setOrderNo(order.getOrderNo());
         vo.setExpireSeconds(RedisConstants.EXPIRE_ALIPAY_BRIDGE);
         vo.setBridgeUrl(bridgeUrl + "?token=" + token);
+        vo.setExternalPayUrl(alipayService.createWapPayRedirectUrl(order, debugReturnUrl));
         return vo;
     }
 
@@ -328,7 +329,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() != OrderConstants.STATUS_UNPAID) {
             throw new BusinessException(ResultCode.ORDER_ALREADY_PAID);
         }
-        return wrapAutoSubmitHtml(alipayService.createPagePayForm(order, debugReturnUrl));
+        // 微信开发者工具无法处理 WapPay 的 alipay:// 协议，且沙箱 PagePay POST 表单可能 504；调试链路使用 PagePay GET 地址并等待用户手动触发。
+        return wrapAutoRedirectHtml(alipayService.createPagePayRedirectUrl(order, debugReturnUrl));
     }
 
     @Override
@@ -427,16 +429,48 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 将支付宝 SDK 生成的表单包进最小 HTML，便于微信小程序 web-view 加载后自动提交。
+     * 将支付宝 SDK 生成的表单包进移动端桥接页，自动提交失败时仍提供手动按钮兜底。
      */
     private String wrapAutoSubmitHtml(String formHtml) {
         return "<!doctype html><html><head><meta charset=\"utf-8\">"
-                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover\">"
                 + "<title>正在跳转支付宝沙箱</title></head>"
-                + "<body><p style=\"font-family:sans-serif;color:#666;text-align:center;margin-top:48px;\">正在跳转支付宝沙箱...</p>"
+                + "<body style=\"margin:0;min-height:100vh;background:#f7f8fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;\">"
+                + "<main style=\"min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));text-align:center;color:#4b5563;\">"
+                + "<h3 style=\"margin:0 0 10px;font-size:20px;line-height:1.4;color:#111827;\">正在打开支付宝沙箱支付</h3>"
+                + "<p style=\"margin:0 0 18px;max-width:320px;font-size:14px;line-height:1.7;\">如果页面没有自动跳转，请点击下方按钮继续。</p>"
+                + "<button type=\"button\" onclick=\"submitAlipayForm()\" style=\"width:100%;max-width:280px;height:44px;border:0;border-radius:999px;background:#1677ff;color:#fff;font-size:15px;font-weight:600;\">手动打开支付宝沙箱支付</button>"
+                + "</main>"
                 + formHtml
-                + "<script>document.addEventListener('DOMContentLoaded',function(){var f=document.forms[0];if(f){f.submit();}});</script>"
+                + "<script>function submitAlipayForm(){var f=document.forms[0];if(f){f.submit();}}document.addEventListener('DOMContentLoaded',function(){setTimeout(submitAlipayForm,200);});</script>"
                 + "</body></html>";
+    }
+
+    /**
+     * 将支付宝 PagePay GET 地址包进桥接页，不自动跳转，避免微信开发者工具 web-view 在跳转阶段直接白屏。
+     */
+    private String wrapAutoRedirectHtml(String payUrl) {
+        String escapedUrl = escapeHtmlAttribute(payUrl);
+        return "<!doctype html><html><head><meta charset=\"utf-8\">"
+                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover\">"
+                + "<title>支付宝沙箱支付桥接页</title></head>"
+                + "<body style=\"margin:0;min-height:100vh;background:#f7f8fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;\">"
+                + "<main style=\"min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));text-align:center;color:#4b5563;\">"
+                + "<h3 style=\"margin:0 0 10px;font-size:20px;line-height:1.4;color:#111827;\">支付宝沙箱支付桥接页</h3>"
+                + "<p style=\"margin:0 0 18px;max-width:320px;font-size:14px;line-height:1.7;\">微信开发者工具自动跳转支付宝页面可能白屏，请点击下方按钮手动继续。</p>"
+                + "<a href=\"" + escapedUrl + "\" style=\"box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:100%;max-width:280px;height:44px;border-radius:999px;background:#1677ff;color:#fff;text-decoration:none;font-size:15px;font-weight:600;\">手动打开支付宝沙箱支付</a>"
+                + "</main>"
+                + "</body></html>";
+    }
+
+    private String escapeHtmlAttribute(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("\"", "&quot;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     @Override

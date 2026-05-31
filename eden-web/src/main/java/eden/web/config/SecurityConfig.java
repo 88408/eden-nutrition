@@ -12,8 +12,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -71,7 +80,69 @@ public class SecurityConfig {
         
         // 添加JWT filter
         http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        // 支付宝调试桥接页需要被微信开发者工具 web-view 承载，只对这些 HTML 页面屏蔽 X-Frame-Options。
+        http.addFilterBefore(alipayWebViewFrameHeaderFilter(), HeaderWriterFilter.class);
         
         return http.build();
+    }
+
+    /**
+     * 仅支付宝沙箱调试 HTML 允许被 web-view 嵌入，其他接口继续保留 Spring Security 默认响应头。
+     */
+    @Bean
+    public OncePerRequestFilter alipayWebViewFrameHeaderFilter() {
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain filterChain) throws ServletException, IOException {
+                if (isAlipayWebViewDebugPage(request)) {
+                    filterChain.doFilter(request, new SuppressFrameOptionsResponse(response));
+                    return;
+                }
+                filterChain.doFilter(request, response);
+            }
+        };
+    }
+
+    /**
+     * context-path 为 /api 时 servletPath 不含 /api；保留 /api 判断用于兼容代理或测试环境直传完整路径。
+     */
+    private boolean isAlipayWebViewDebugPage(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String requestUri = request.getRequestURI();
+        return isAlipayWebViewDebugPath(servletPath) || isAlipayWebViewDebugPath(requestUri);
+    }
+
+    private boolean isAlipayWebViewDebugPath(String path) {
+        return "/order/pay/alipay/bridge".equals(path)
+                || "/order/pay/alipay/weapp-debug-return".equals(path)
+                || "/api/order/pay/alipay/bridge".equals(path)
+                || "/api/order/pay/alipay/weapp-debug-return".equals(path);
+    }
+
+    /**
+     * 拦截默认 HeaderWriter 写入的 X-Frame-Options，避免微信 web-view 直接白屏。
+     */
+    private static class SuppressFrameOptionsResponse extends HttpServletResponseWrapper {
+        private static final String X_FRAME_OPTIONS = "X-Frame-Options";
+
+        SuppressFrameOptionsResponse(HttpServletResponse response) {
+            super(response);
+        }
+
+        @Override
+        public void setHeader(String name, String value) {
+            if (!X_FRAME_OPTIONS.equalsIgnoreCase(name)) {
+                super.setHeader(name, value);
+            }
+        }
+
+        @Override
+        public void addHeader(String name, String value) {
+            if (!X_FRAME_OPTIONS.equalsIgnoreCase(name)) {
+                super.addHeader(name, value);
+            }
+        }
     }
 }

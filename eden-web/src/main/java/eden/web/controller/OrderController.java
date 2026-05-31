@@ -81,7 +81,8 @@ public class OrderController {
     @PostMapping("/pay/alipay/weapp-debug/{orderNo}")
     public Result<AlipayDebugPayVO> createWeappDebugAlipayPayment(@CurrentUser Long userId, @PathVariable String orderNo) {
         String bridgeUrl = resolveWeappDebugBridgeUrl();
-        AlipayDebugPayVO vo = orderService.createWeappDebugAlipayPayment(userId, orderNo, bridgeUrl);
+        String debugReturnUrl = resolveWeappDebugReturnUrl();
+        AlipayDebugPayVO vo = orderService.createWeappDebugAlipayPayment(userId, orderNo, bridgeUrl, debugReturnUrl);
         return Result.success(vo);
     }
 
@@ -143,6 +144,19 @@ public class OrderController {
         }
         return ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/order/pay/alipay/bridge")
+                .toUriString();
+    }
+
+    /**
+     * 外部手机支付链接也必须使用公网调试返回页，避免支付宝完成支付后回到 localhost。
+     */
+    private String resolveWeappDebugReturnUrl() {
+        String configuredBaseUrl = alipayProperties.getWeappDebugBridgeBaseUrl();
+        if (StringUtils.hasText(configuredBaseUrl)) {
+            return configuredBaseUrl.replaceAll("/+$", "") + "/order/pay/alipay/weapp-debug-return";
+        }
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/order/pay/alipay/weapp-debug-return")
                 .toUriString();
     }
 }

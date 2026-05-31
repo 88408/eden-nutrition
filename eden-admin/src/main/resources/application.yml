@@ -8,6 +8,10 @@ server:
     context-path: /api
 
 spring:
+  # 实际启动模块需要显式导入仓库根目录 .env，否则支付宝沙箱密钥不会进入运行时配置。
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: eden-nutrition
   profiles:
@@ -96,6 +100,22 @@ swagger:
 elasticsearch:
   host: localhost
   port: 9200
+
+# 自定义配置
+eden:
+  # 支付宝沙箱配置：密钥类参数通过仓库根目录 .env 注入，避免把真实私钥写入仓库。
+  alipay:
+    app-id: ${ALIPAY_APP_ID:}
+    private-key: ${ALIPAY_PRIVATE_KEY:}
+    alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+    seller-id: ${ALIPAY_SELLER_ID:}
+    gateway-url: ${ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
+    notify-url: ${ALIPAY_NOTIFY_URL:https://3234d5c4.r27.cpolar.top/api/order/pay/alipay/notify}
+    return-url: ${ALIPAY_RETURN_URL:https://3234d5c4.r27.cpolar.top/api/order/pay/alipay/return}
+    frontend-return-base-url: ${ALIPAY_FRONTEND_RETURN_BASE_URL:http://localhost:10086}
+    weapp-debug-bridge-base-url: ${ALIPAY_WEAPP_DEBUG_BRIDGE_BASE_URL:https://3234d5c4.r27.cpolar.top/api}
+    charset: UTF-8
+    sign-type: RSA2
 
 # Actuator & Monitoring 配置
 #management:

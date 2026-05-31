@@ -8,6 +8,10 @@ server:
     context-path: /api
 
 spring:
+  # 加载仓库根目录 .env，便于本地注入支付宝等敏感配置；文件不存在时不影响应用启动。
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: eden-nutrition
   profiles:
@@ -129,11 +133,12 @@ eden:
     app-id: ${ALIPAY_APP_ID:}
     private-key: ${ALIPAY_PRIVATE_KEY:}
     alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+    seller-id: ${ALIPAY_SELLER_ID:}
     gateway-url: ${ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
-    notify-url: ${ALIPAY_NOTIFY_URL:http://localhost:8080/api/order/pay/alipay/notify}
-    return-url: ${ALIPAY_RETURN_URL:http://localhost:8080/api/order/pay/alipay/return}
+    notify-url: ${ALIPAY_NOTIFY_URL:https://3234d5c4.r27.cpolar.top/api/order/pay/alipay/notify}
+    return-url: ${ALIPAY_RETURN_URL:https://3234d5c4.r27.cpolar.top/api/order/pay/alipay/return}
     frontend-return-base-url: ${ALIPAY_FRONTEND_RETURN_BASE_URL:http://localhost:10086}
-    weapp-debug-bridge-base-url: ${ALIPAY_WEAPP_DEBUG_BRIDGE_BASE_URL:http://localhost:8080/api}
+    weapp-debug-bridge-base-url: ${ALIPAY_WEAPP_DEBUG_BRIDGE_BASE_URL:https://3234d5c4.r27.cpolar.top/api}
     charset: UTF-8
     sign-type: RSA2
   # 秒杀配置

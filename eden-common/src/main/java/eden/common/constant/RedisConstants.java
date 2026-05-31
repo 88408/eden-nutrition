@@ -121,8 +121,8 @@ public class RedisConstants {
     /** 登录失败记录过期时间：30分钟 */
     public static final long EXPIRE_LOGIN_FAIL = 30 * 60;
 
-    /** 支付宝调试桥接 token 过期时间：10分钟 */
-    public static final long EXPIRE_ALIPAY_BRIDGE = 10 * 60;
+    /** 支付宝调试桥接 token 过期时间：60分钟，给微信开发者工具和支付宝沙箱慢跳转保留充足调试窗口。 */
+    public static final long EXPIRE_ALIPAY_BRIDGE = 60 * 60;
 
     /** 秒杀异步结果过期时间：30分钟 */
     public static final long EXPIRE_SECKILL_RESULT = 30 * 60;
