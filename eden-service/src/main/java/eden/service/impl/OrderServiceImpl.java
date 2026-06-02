@@ -432,9 +432,8 @@ public class OrderServiceImpl implements OrderService {
      * 将支付宝 SDK 生成的表单包进移动端桥接页，自动提交失败时仍提供手动按钮兜底。
      */
     private String wrapAutoSubmitHtml(String formHtml) {
-        return "<!doctype html><html><head><meta charset=\"utf-8\">"
-                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover\">"
-                + "<title>正在跳转支付宝沙箱</title></head>"
+        return "<!doctype html><html>"
+                + buildMobileHead("正在跳转支付宝沙箱")
                 + "<body style=\"margin:0;min-height:100vh;background:#f7f8fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;\">"
                 + "<main style=\"min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));text-align:center;color:#4b5563;\">"
                 + "<h3 style=\"margin:0 0 10px;font-size:20px;line-height:1.4;color:#111827;\">正在打开支付宝沙箱支付</h3>"
@@ -451,9 +450,8 @@ public class OrderServiceImpl implements OrderService {
      */
     private String wrapAutoRedirectHtml(String payUrl) {
         String escapedUrl = escapeHtmlAttribute(payUrl);
-        return "<!doctype html><html><head><meta charset=\"utf-8\">"
-                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover\">"
-                + "<title>支付宝沙箱支付桥接页</title></head>"
+        return "<!doctype html><html>"
+                + buildMobileHead("支付宝沙箱支付桥接页")
                 + "<body style=\"margin:0;min-height:100vh;background:#f7f8fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;\">"
                 + "<main style=\"min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));text-align:center;color:#4b5563;\">"
                 + "<h3 style=\"margin:0 0 10px;font-size:20px;line-height:1.4;color:#111827;\">支付宝沙箱支付桥接页</h3>"
@@ -461,6 +459,15 @@ public class OrderServiceImpl implements OrderService {
                 + "<a href=\"" + escapedUrl + "\" style=\"box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:100%;max-width:280px;height:44px;border-radius:999px;background:#1677ff;color:#fff;text-decoration:none;font-size:15px;font-weight:600;\">手动打开支付宝沙箱支付</a>"
                 + "</main>"
                 + "</body></html>";
+    }
+
+    /**
+     * 所有本地支付宝桥接承载页统一使用标准移动端 viewport，避免 web-view 将页面按 PC 宽度缩放。
+     */
+    private String buildMobileHead(String title) {
+        return "<head><meta charset=\"utf-8\">"
+                + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, viewport-fit=cover\">"
+                + "<title>" + escapeHtmlAttribute(title) + "</title></head>";
     }
 
     private String escapeHtmlAttribute(String value) {
