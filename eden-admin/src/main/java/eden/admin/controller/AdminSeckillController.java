@@ -1,6 +1,7 @@
 package eden.admin.controller;
 
 import eden.admin.annotation.RequireAdminLogin;
+import eden.admin.annotation.RequirePermission;
 import eden.common.result.Result;
 import eden.pojo.dto.AdminSeckillQueryDTO;
 import eden.pojo.dto.AdminSeckillSaveDTO;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/seckill")
 @RequireAdminLogin
+@RequirePermission("seckill:manage")
 public class AdminSeckillController {
 
     @Autowired

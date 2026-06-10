@@ -24,6 +24,12 @@ public class OrderItem implements Serializable {
     /** 商品ID */
     private Long productId;
 
+    /** 商品 SKU ID，下单时为空表示使用主商品库存 */
+    private Long skuId;
+
+    /** SKU 规格快照，避免后续修改 SKU 后影响历史订单展示 */
+    private String skuSpecName;
+
     /** 商品名称（快照） */
     private String productName;
 

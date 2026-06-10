@@ -2,6 +2,7 @@ package eden.service;
 
 import eden.pojo.ProductReview;
 import eden.pojo.vo.PageVO;
+import eden.pojo.vo.ProductReviewVO;
 
 /**
  * 商品评价服务接口
@@ -12,6 +13,11 @@ public interface ProductReviewService {
      * 获取商品评价列表
      */
     PageVO<ProductReview> getProductReviews(Long productId, int pageNum, int pageSize);
+
+    /**
+     * 获取当前用户的评价列表，返回商品快照字段以支撑个人中心“我的评价”。
+     */
+    PageVO<ProductReviewVO> getMyReviews(Long userId, int pageNum, int pageSize);
 
     /**
      * 添加评价

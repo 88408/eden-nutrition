@@ -5,7 +5,9 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
+import com.alipay.api.response.AlipayTradeRefundResponse;
 import eden.common.exception.BusinessException;
 import eden.pojo.Order;
 import eden.service.AlipayService;
@@ -16,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.RoundingMode;
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -115,6 +118,38 @@ public class AlipayServiceImpl implements AlipayService {
                 .queryParam("orderNo", orderNo)
                 .build()
                 .toUriString();
+    }
+
+    @Override
+    public String refund(Order order, BigDecimal refundAmount) {
+        try {
+            String outRequestNo = "RF" + order.getOrderNo() + System.currentTimeMillis();
+            String amount = refundAmount.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            String tradeNoParam = StringUtils.hasText(order.getPaymentTradeNo())
+                    ? "\"trade_no\":\"" + order.getPaymentTradeNo() + "\","
+                    : "";
+
+            AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
+            request.setBizContent("{"
+                    + "\"out_trade_no\":\"" + order.getOrderNo() + "\","
+                    + tradeNoParam
+                    + "\"refund_amount\":\"" + amount + "\","
+                    + "\"out_request_no\":\"" + outRequestNo + "\","
+                    + "\"refund_reason\":\"Eden Nutrition 售后退款\""
+                    + "}");
+            AlipayTradeRefundResponse response = createClient().execute(request);
+            // 支付宝 SDK 可能正常返回业务失败响应，必须显式检查结果，避免把第三方失败记录成真实退款成功。
+            if (response == null || !response.isSuccess()) {
+                String message = response == null ? "支付宝无退款响应" : response.getSubMsg();
+                if (message == null || message.isBlank()) {
+                    message = response == null ? "支付宝无退款响应" : response.getMsg();
+                }
+                throw new BusinessException("支付宝沙箱退款失败：" + message);
+            }
+            return outRequestNo;
+        } catch (AlipayApiException | IllegalStateException e) {
+            throw new BusinessException("支付宝沙箱退款失败：" + e.getMessage(), e);
+        }
     }
 
     /**

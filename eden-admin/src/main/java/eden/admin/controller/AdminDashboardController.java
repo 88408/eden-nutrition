@@ -1,6 +1,7 @@
 package eden.admin.controller;
 
 import eden.admin.annotation.RequireAdminLogin;
+import eden.admin.annotation.RequirePermission;
 import eden.common.result.Result;
 import eden.pojo.vo.DashboardStatItemVO;
 import eden.pojo.vo.SalesRevenueVO;
@@ -24,11 +25,13 @@ public class AdminDashboardController {
     private DashboardService dashboardService;
 
     @GetMapping("/stats")
+    @RequirePermission("dashboard:view")
     public Result<List<DashboardStatItemVO>> getDashboardStats() {
         return Result.success(dashboardService.getDashboardStats());
     }
 
     @GetMapping("/sales")
+    @RequirePermission("dashboard:view")
     public Result<List<SalesRevenueVO>> getSalesRevenue(@RequestParam(defaultValue = "7") Integer days) {
         return Result.success(dashboardService.getSalesRevenue(days));
     }

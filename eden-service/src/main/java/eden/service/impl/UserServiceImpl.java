@@ -7,9 +7,11 @@ import eden.common.utils.JwtUtils;
 import eden.mapper.UserMapper;
 import eden.pojo.User;
 import eden.pojo.dto.LoginDTO;
+import eden.pojo.dto.PasswordResetDTO;
 import eden.pojo.dto.RegisterDTO;
 import eden.pojo.vo.LoginVO;
 import eden.pojo.vo.UserVO;
+import eden.service.RbacService;
 import eden.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +20,24 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 /**
  * 用户服务实现类
  */
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    private static final SecureRandom PASSWORD_RESET_RANDOM = new SecureRandom();
 
     @Autowired
     private UserMapper userMapper;
@@ -44,6 +54,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RbacService rbacService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -132,8 +144,22 @@ public class UserServiceImpl implements UserService {
         loginVO.setNickname(user.getNickname());
         loginVO.setAvatar(user.getAvatar());
         loginVO.setRole(user.getRole());
+        if ("ADMIN".equals(user.getRole())) {
+            enrichAdminAuth(loginVO, user.getId());
+        }
 
         return loginVO;
+    }
+
+    /**
+     * 为后台登录结果补充角色、权限码和菜单树，供管理端做菜单与按钮级 RBAC 控制。
+     */
+    private void enrichAdminAuth(LoginVO loginVO, Long userId) {
+        loginVO.setRoles(rbacService.getUserRoles(userId).stream()
+                .map(role -> role.getCode())
+                .collect(Collectors.toList()));
+        loginVO.setPermissions(rbacService.getPermissionCodes(userId));
+        loginVO.setMenus(rbacService.getMenuTreeByUserId(userId));
     }
 
     private void incrementLoginFail(String failKey) {
@@ -172,6 +198,13 @@ public class UserServiceImpl implements UserService {
         // 转换为VO
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
+        if ("ADMIN".equals(user.getRole())) {
+            userVO.setRoles(rbacService.getUserRoles(userId).stream()
+                    .map(role -> role.getCode())
+                    .collect(Collectors.toList()));
+            userVO.setPermissions(rbacService.getPermissionCodes(userId));
+            userVO.setMenus(rbacService.getMenuTreeByUserId(userId));
+        }
 
         // 缓存用户信息
         redisTemplate.opsForValue().set(cacheKey, userVO, RedisConstants.EXPIRE_USER_INFO, TimeUnit.SECONDS);
@@ -196,7 +229,7 @@ public class UserServiceImpl implements UserService {
         User updateUser = new User();
         updateUser.setId(userId);
         updateUser.setNickname(userVO.getNickname());
-        updateUser.setPhone(userVO.getPhone());
+        // 手机号用于登录找回密码等安全链路，普通资料更新不允许直接覆盖，避免绕过验证码绑定他人手机号。
         updateUser.setEmail(userVO.getEmail());
         updateUser.setAvatar(userVO.getAvatar());
         updateUser.setGender(userVO.getGender());
@@ -228,6 +261,43 @@ public class UserServiceImpl implements UserService {
 
         // 清除Token，强制重新登录
         logout(userId);
+    }
+
+    @Override
+    public void sendPasswordResetCode(String phone) {
+        User user = userMapper.selectByPhone(phone);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND, "手机号未注册");
+        }
+
+        // 验证码先写入 Redis 并打印日志模拟短信发送，后续接入短信供应商时只需替换发送动作。
+        String code = String.format("%06d", PASSWORD_RESET_RANDOM.nextInt(1_000_000));
+        String key = RedisConstants.VERIFY_CODE + "password:reset:" + phone;
+        stringRedisTemplate.opsForValue().set(key, code, RedisConstants.EXPIRE_VERIFY_CODE, TimeUnit.SECONDS);
+        log.info("用户找回密码验证码 phone={}, code={}, expireSeconds={}", phone, code, RedisConstants.EXPIRE_VERIFY_CODE);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void resetPassword(PasswordResetDTO resetDTO) {
+        String key = RedisConstants.VERIFY_CODE + "password:reset:" + resetDTO.getPhone();
+        String cachedCode = stringRedisTemplate.opsForValue().get(key);
+        if (cachedCode == null || !cachedCode.equals(resetDTO.getCode())) {
+            throw new BusinessException(ResultCode.VERIFY_CODE_ERROR);
+        }
+
+        User user = userMapper.selectByPhone(resetDTO.getPhone());
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND, "手机号未注册");
+        }
+
+        // 找回密码不要求旧密码，但会更新密码并清除验证码，确保验证码只能使用一次。
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setPassword(passwordEncoder.encode(resetDTO.getNewPassword()));
+        userMapper.update(updateUser);
+        stringRedisTemplate.delete(key);
+        logout(user.getId());
     }
 
     @Override

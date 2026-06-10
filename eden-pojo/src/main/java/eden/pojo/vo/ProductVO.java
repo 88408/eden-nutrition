@@ -7,6 +7,8 @@ import org.springframework.beans.BeanUtils;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 商品视图对象
@@ -68,6 +70,9 @@ public class ProductVO implements Serializable {
 
     /** 评论数 */
     private Integer reviewCount = 0;
+
+    /** 商品规格列表，用户端详情页用于选择口味、规格和包装 */
+    private List<eden.pojo.ProductSku> skuList = new ArrayList<>();
 
     /**
      * 从 Product 实体转换

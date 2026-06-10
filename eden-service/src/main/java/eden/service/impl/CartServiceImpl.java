@@ -8,11 +8,13 @@ import eden.common.result.ResultCode;
 import eden.mapper.ProductMapper;
 import eden.pojo.CartItem;
 import eden.pojo.Product;
+import eden.pojo.ProductSku;
 import eden.pojo.dto.CartDTO;
 import eden.pojo.vo.CartItemVO;
 import eden.pojo.vo.CartVO;
 import eden.service.CartService;
 import eden.service.ProductService;
+import eden.service.ProductSkuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,12 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 购物车服务实现类
  * 购物车数据存储在Redis中，使用Hash结构
  * Key: eden:cart:{userId}
- * Field: productId
+ * Field: productId 或 productId:skuId；带 SKU 的商品必须用组合键，避免不同规格互相覆盖
  * Value: CartItem JSON字符串
  */
 @Service
@@ -44,13 +47,16 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private ProductService productService;
-    
+
+    @Autowired
+    private ProductSkuService productSkuService;
+
     @Autowired
     private ProductMapper productMapper;
-    
+
     @Autowired
     private ObjectMapper objectMapper;
-    
+
     /**
      * 将 CartItem 序列化为 JSON 字符串
      */
@@ -61,7 +67,7 @@ public class CartServiceImpl implements CartService {
             throw new BusinessException("序列化购物车项失败");
         }
     }
-    
+
     /**
      * 将 JSON 字符串反序列化为 CartItem
      */
@@ -81,10 +87,31 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    /**
+     * 生成 Redis Hash 字段名。
+     * <p>旧购物车数据只有商品维度，继续使用 productId；新 SKU 购物车项使用 productId:skuId 保证同一商品不同规格可共存。</p>
+     */
+    private String buildFieldKey(Long productId, Long skuId) {
+        return skuId == null ? String.valueOf(productId) : productId + ":" + skuId;
+    }
+
+    /**
+     * 拼接规格展示名，下单和购物车展示共用同一份快照规则，避免前后端文案不一致。
+     */
+    private String buildSkuSpecName(ProductSku sku) {
+        if (sku == null) {
+            return null;
+        }
+        return String.join(" / ",
+                java.util.stream.Stream.of(sku.getSpecName(), sku.getFlavor(), sku.getPackageSize())
+                        .filter(value -> value != null && !value.isBlank())
+                        .toArray(String[]::new));
+    }
+
     @Override
     public CartVO getCart(Long userId) {
         String cartKey = RedisConstants.CART + userId;
-        
+
         Map<Object, Object> rawItems = stringRedisTemplate.opsForHash().entries(cartKey);
 
         CartVO cartVO = new CartVO();
@@ -101,7 +128,7 @@ public class CartServiceImpl implements CartService {
                     System.out.println("[CartService] item is null or productId is null, skipping");
                     continue;
                 }
-                
+
                 // 直接从数据库获取商品信息（避免缓存序列化问题）
                 System.out.println("[CartService] Getting product: " + item.getProductId());
                 Product product = productMapper.selectById(item.getProductId());
@@ -114,19 +141,38 @@ public class CartServiceImpl implements CartService {
 
                 CartItemVO itemVO = new CartItemVO();
                 itemVO.setProductId(product.getId());
+                ProductSku sku = null;
+                if (item.getSkuId() != null) {
+                    sku = productSkuService.getById(item.getSkuId());
+                    if (sku == null || !product.getId().equals(sku.getProductId()) || sku.getStatus() == null || sku.getStatus() != 1) {
+                        // SKU 已删除、停用或不属于该商品时移除购物车项，避免结算时出现不可用规格。
+                        stringRedisTemplate.opsForHash().delete(cartKey, entry.getKey());
+                        continue;
+                    }
+                }
+
+                BigDecimal price = sku == null ? product.getPrice() : sku.getPrice();
+                Integer stock = sku == null ? product.getStock() : Math.min(product.getStock(), sku.getStock());
+                String imageUrl = sku != null && sku.getImageUrl() != null && !sku.getImageUrl().isBlank()
+                        ? sku.getImageUrl()
+                        : product.getMainImage();
+
+                itemVO.setProductId(product.getId());
+                itemVO.setSkuId(sku == null ? null : sku.getId());
+                itemVO.setSkuSpecName(sku == null ? item.getSkuSpecName() : buildSkuSpecName(sku));
                 itemVO.setProductName(product.getName());
-                itemVO.setProductImage(product.getMainImage());
-                itemVO.setPrice(product.getPrice());
+                itemVO.setProductImage(imageUrl);
+                itemVO.setPrice(price);
                 itemVO.setQuantity(item.getQuantity());
                 itemVO.setSelected(item.getSelected());
-                itemVO.setStock(product.getStock());
+                itemVO.setStock(stock);
 
                 // 计算小计
-                BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                BigDecimal subtotal = price.multiply(BigDecimal.valueOf(item.getQuantity()));
                 itemVO.setSubtotal(subtotal);
 
                 // 检查库存
-                itemVO.setStockEnough(product.getStock() >= item.getQuantity());
+                itemVO.setStockEnough(stock >= item.getQuantity());
 
                 items.add(itemVO);
 
@@ -145,6 +191,8 @@ public class CartServiceImpl implements CartService {
 
         cartVO.setItems(items);
         cartVO.setTotalAmount(totalAmount);
+        cartVO.setSelectedAmount(totalAmount);
+        cartVO.setTotalCount(items.size());
         cartVO.setTotalQuantity(totalQuantity);
         cartVO.setSelectedCount(selectedCount);
         cartVO.setAllSelected(selectedCount == items.size() && !items.isEmpty());
@@ -159,7 +207,22 @@ public class CartServiceImpl implements CartService {
         // 验证商品
         Product product = productService.getById(cartDTO.getProductId());
 
-        String fieldKey = String.valueOf(cartDTO.getProductId());
+        ProductSku sku = null;
+        List<ProductSku> enabledSkus = productSkuService.listByProductId(cartDTO.getProductId()).stream()
+                .filter(item -> item.getStatus() != null && item.getStatus() == 1)
+                .collect(Collectors.toList());
+        if (!enabledSkus.isEmpty() && cartDTO.getSkuId() == null) {
+            throw new BusinessException("请选择商品规格后再加入购物车");
+        }
+        if (cartDTO.getSkuId() != null) {
+            sku = productSkuService.getById(cartDTO.getSkuId());
+            if (sku == null || !cartDTO.getProductId().equals(sku.getProductId()) || sku.getStatus() == null || sku.getStatus() != 1) {
+                throw new BusinessException("所选商品规格不可用");
+            }
+        }
+
+        String fieldKey = buildFieldKey(cartDTO.getProductId(), cartDTO.getSkuId());
+        int stock = sku == null ? product.getStock() : Math.min(product.getStock(), sku.getStock());
 
         // 检查购物车中是否已存在该商品
         String existingJson = (String) stringRedisTemplate.opsForHash().get(cartKey, fieldKey);
@@ -171,7 +234,7 @@ public class CartServiceImpl implements CartService {
             if (newQuantity > MAX_ITEM_QUANTITY) {
                 newQuantity = MAX_ITEM_QUANTITY;
             }
-            if (newQuantity > product.getStock()) {
+            if (newQuantity > stock) {
                 throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH);
             }
             existingItem.setQuantity(newQuantity);
@@ -184,7 +247,7 @@ public class CartServiceImpl implements CartService {
             }
 
             // 检查库存
-            if (cartDTO.getQuantity() > product.getStock()) {
+            if (cartDTO.getQuantity() > stock) {
                 throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH);
             }
 
@@ -192,6 +255,8 @@ public class CartServiceImpl implements CartService {
             CartItem newItem = new CartItem();
             newItem.setUserId(userId);
             newItem.setProductId(cartDTO.getProductId());
+            newItem.setSkuId(cartDTO.getSkuId());
+            newItem.setSkuSpecName(buildSkuSpecName(sku));
             newItem.setQuantity(cartDTO.getQuantity());
             newItem.setSelected(true);
 
@@ -203,9 +268,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void updateQuantity(Long userId, Long productId, Integer quantity) {
+    public void updateQuantity(Long userId, Long productId, Long skuId, Integer quantity) {
         if (quantity <= 0) {
-            removeFromCart(userId, productId);
+            removeFromCart(userId, productId, skuId);
             return;
         }
 
@@ -214,7 +279,7 @@ public class CartServiceImpl implements CartService {
         }
 
         String cartKey = RedisConstants.CART + userId;
-        String fieldKey = String.valueOf(productId);
+        String fieldKey = buildFieldKey(productId, skuId);
 
         String json = (String) stringRedisTemplate.opsForHash().get(cartKey, fieldKey);
         CartItem item = fromJson(json);
@@ -224,7 +289,15 @@ public class CartServiceImpl implements CartService {
 
         // 检查库存
         Product product = productService.getById(productId);
-        if (quantity > product.getStock()) {
+        int stock = product.getStock();
+        if (skuId != null) {
+            ProductSku sku = productSkuService.getById(skuId);
+            if (sku == null || !productId.equals(sku.getProductId()) || sku.getStatus() == null || sku.getStatus() != 1) {
+                throw new BusinessException("所选商品规格不可用");
+            }
+            stock = Math.min(stock, sku.getStock());
+        }
+        if (quantity > stock) {
             throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH);
         }
 
@@ -233,9 +306,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void removeFromCart(Long userId, Long productId) {
+    public void removeFromCart(Long userId, Long productId, Long skuId) {
         String cartKey = RedisConstants.CART + userId;
-        String fieldKey = String.valueOf(productId);
+        String fieldKey = buildFieldKey(productId, skuId);
         stringRedisTemplate.opsForHash().delete(cartKey, fieldKey);
     }
 
@@ -253,9 +326,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void selectItem(Long userId, Long productId, boolean selected) {
+    public void selectItem(Long userId, Long productId, Long skuId, boolean selected) {
         String cartKey = RedisConstants.CART + userId;
-        String fieldKey = String.valueOf(productId);
+        String fieldKey = buildFieldKey(productId, skuId);
 
         String json = (String) stringRedisTemplate.opsForHash().get(cartKey, fieldKey);
         CartItem item = fromJson(json);

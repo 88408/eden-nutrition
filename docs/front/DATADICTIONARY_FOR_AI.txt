@@ -1,0 +1,580 @@
+================================================================================
+EDEN NUTRITION E-COMMERCE PLATFORM - DATA DICTIONARY
+伊甸滋补线上商店 - 数据字典文档
+================================================================================
+Version: 1.0.0
+Generated: 2026-04-28
+Purpose: 供 Google AI Studio 用于生成管理端前端代码
+
+================================================================================
+项目概览
+================================================================================
+
+项目名称: 伊甸滋补线上商店 (Eden Nutrition E-Commerce Platform)
+项目描述: 一个专注于高端滋补品（如燕窝、人参、阿胶、灵芝等）的 B2C 电商平台
+
+后端技术栈:
+- 框架: Java Spring Boot 2.7.18 + Spring MVC + MyBatis 3.5
+- 数据库: MySQL 8.0
+- 缓存: Redis
+- 消息队列: RabbitMQ
+- API 文档: Swagger 3.0 / Knife4j
+- 构建工具: Maven
+- Java 版本: 17
+
+前端项目位置:
+- 管理端: eden-admin-vue (Vue 3 + TypeScript + Vite + Element Plus)
+- 商城端: eden-vue (Vue 3 + React 技术栈可选)
+
+后端服务端口: 8080
+API Context Path: /api
+数据库: eden_db (MySQL 8.0.33, Charset: utf8mb4)
+
+================================================================================
+数据库配置信息
+================================================================================
+
+数据源配置:
+- Driver: com.mysql.cj.jdbc.Driver
+- URL: jdbc:mysql://localhost:3307/eden_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+- Username: eden
+- Password: edenpass
+- Connection Pool: HikariCP (min: 5, max: 20)
+
+Redis 配置:
+- Host: localhost:6379
+- Database: 0
+
+RabbitMQ 配置:
+- Host: localhost:5672
+- Username: user
+- Password: password
+- Virtual Host: /
+
+================================================================================
+TABLE 1: USER - 用户表
+================================================================================
+
+表描述:
+- 名称: user
+- 业务说明: 用户基础信息表（登录、资料、角色、状态、积分）
+- 主键策略: id BIGINT AUTO_INCREMENT
+- 审计字段: create_time(创建时间), update_time(更新时间 ON UPDATE)
+
+字段清单:
+┌─────────────────┬──────────────┬──────────────────────┬──────────┬────────────────────────────────────┐
+│ 字段名          │ 数据类型     │ 约束                 │ 默认值   │ 业务说明                           │
+├─────────────────┼──────────────┼──────────────────────┼──────────┼────────────────────────────────────┤
+│ id              │ BIGINT       │ PRIMARY KEY AUTO_INC │ -        │ 用户ID                             │
+│ username        │ VARCHAR(50)  │ NOT NULL UNIQUE      │ -        │ 用户名                             │
+│ phone           │ VARCHAR(20)  │ UNIQUE               │ NULL     │ 手机号                             │
+│ email           │ VARCHAR(100) │ UNIQUE               │ NULL     │ 邮箱                               │
+│ password        │ VARCHAR(255) │ NOT NULL             │ -        │ 密码（加密存储）                   │
+│ nickname        │ VARCHAR(50)  │ -                    │ NULL     │ 昵称                               │
+│ avatar          │ VARCHAR(500) │ -                    │ NULL     │ 头像URL                            │
+│ gender          │ TINYINT      │ -                    │ 0        │ 性别：0-未知 1-男 2-女             │
+│ points          │ INT          │ -                    │ 0        │ 积分                               │
+│ status          │ TINYINT      │ -                    │ 1        │ 状态：0-禁用 1-正常                │
+│ role            │ VARCHAR(20)  │ -                    │ 'USER'   │ 角色：USER-普通 ADMIN-管理员       │
+│ create_time     │ DATETIME     │ -                    │ NOW()    │ 创建时间                           │
+│ update_time     │ DATETIME     │ -                    │ NOW()    │ 更新时间                           │
+└─────────────────┴──────────────┴──────────────────────┴──────────┴────────────────────────────────────┘
+
+索引设计:
+- PRIMARY(id): 主键聚簇索引
+- idx_username(username): 用户名登录查询
+- idx_phone(phone): 手机号登录/查重
+
+枚举值:
+- gender: 0(未知), 1(男), 2(女)
+- status: 0(禁用), 1(正常)
+- role: USER(普通用户), ADMIN(管理员)
+
+外键关联:
+- 被多表引用: user_address.user_id, order.user_id, user_coupon.user_id, product_review.user_id
+
+================================================================================
+TABLE 2: CATEGORY - 商品分类表
+================================================================================
+
+表描述:
+- 名称: category
+- 业务说明: 商品分类树（支持一级/二级分类）
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+字段清单:
+┌──────────────┬──────────────┬─────────────────┬──────────┬─────────────────────────┐
+│ 字段名       │ 数据类型     │ 约束            │ 默认值   │ 业务说明                │
+├──────────────┼──────────────┼─────────────────┼──────────┼─────────────────────────┤
+│ id           │ BIGINT       │ PRIMARY KEY     │ -        │ 分类ID                  │
+│ name         │ VARCHAR(50)  │ NOT NULL        │ -        │ 分类名称                │
+│ parent_id    │ BIGINT       │ -               │ 0        │ 父分类ID（0=一级）      │
+│ level        │ TINYINT      │ -               │ 1        │ 分类层级（1-一级 2-二级 │
+│ sort_order   │ INT          │ -               │ 0        │ 排序值                  │
+│ icon         │ VARCHAR(255) │ -               │ NULL     │ 分类图标URL             │
+│ status       │ TINYINT      │ -               │ 1        │ 状态：0-禁用 1-启用     │
+│ create_time  │ DATETIME     │ -               │ NOW()    │ 创建时间                │
+│ update_time  │ DATETIME     │ -               │ NOW()    │ 更新时间                │
+└──────────────┴──────────────┴─────────────────┴──────────┴─────────────────────────┘
+
+索引设计:
+- idx_parent_id(parent_id): 树形查询
+
+================================================================================
+TABLE 3: PRODUCT - 商品表
+================================================================================
+
+表描述:
+- 名称: product
+- 业务说明: 商品主数据表（商品信息、价格、库存、上下架及运营标签）
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+字段清单:
+┌──────────────────┬──────────────┬─────────────────────┬──────────┬────────────────────────────┐
+│ 字段名           │ 数据类型     │ 约束                │ 默认值   │ 业务说明                   │
+├──────────────────┼──────────────┼─────────────────────┼──────────┼────────────────────────────┤
+│ id               │ BIGINT       │ PRIMARY KEY AUTO_INC│ -        │ 商品ID                     │
+│ name             │ VARCHAR(200) │ NOT NULL            │ -        │ 商品名称                   │
+│ subtitle         │ VARCHAR(500) │ -                   │ NULL     │ 商品副标题                 │
+│ category_id      │ BIGINT       │ NOT NULL            │ -        │ 分类ID                     │
+│ main_image       │ VARCHAR(500) │ -                   │ NULL     │ 主图URL                    │
+│ sub_images       │ TEXT         │ -                   │ NULL     │ 商品图片列表(JSON数组)     │
+│ detail           │ TEXT         │ -                   │ NULL     │ 商品详情(富文本)           │
+│ original_price   │ DECIMAL(10,2)│ -                   │ NULL     │ 原价                       │
+│ price            │ DECIMAL(10,2)│ NOT NULL            │ -        │ 销售价格                   │
+│ stock            │ INT          │ NOT NULL            │ 0        │ 库存                       │
+│ sales            │ INT          │ -                   │ 0        │ 销量                       │
+│ status           │ TINYINT      │ -                   │ 1        │ 状态：0-下架 1-上架        │
+│ is_hot           │ TINYINT      │ -                   │ 0        │ 是否热门：0-否 1-是        │
+│ is_new           │ TINYINT      │ -                   │ 0        │ 是否新品：0-否 1-是        │
+│ create_time      │ DATETIME     │ -                   │ NOW()    │ 创建时间                   │
+│ update_time      │ DATETIME     │ -                   │ NOW()    │ 更新时间                   │
+└──────────────────┴──────────────┴─────────────────────┴──────────┴────────────────────────────┘
+
+索引设计:
+- PRIMARY(id): 商品详情查询
+- idx_category_id(category_id): 分类维度筛选
+- idx_status(status): 上架状态筛选
+- idx_name_ft(name) FULLTEXT WITH PARSER ngram: 全文检索
+
+枚举值:
+- status: 0(下架), 1(上架)
+- is_hot: 0(否), 1(是)
+- is_new: 0(否), 1(是)
+
+================================================================================
+TABLE 4: SECKILL - 秒杀活动表
+================================================================================
+
+表描述:
+- 名称: seckill
+- 业务说明: 秒杀活动表，记录商品的秒杀价格、库存及时间窗口
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+字段清单:
+┌──────────────────┬──────────────┬──────────────────────┬──────────┬────────────────────────────┐
+│ 字段名           │ 数据类型     │ 约束                 │ 默认值   │ 业务说明                   │
+├──────────────────┼──────────────┼──────────────────────┼──────────┼────────────────────────────┤
+│ id               │ BIGINT       │ PRIMARY KEY AUTO_INC │ -        │ 秒杀ID                     │
+│ product_id       │ BIGINT       │ NOT NULL             │ -        │ 商品ID(product.id)         │
+│ seckill_price    │ DECIMAL(10,2)│ NOT NULL             │ -        │ 秒杀价格                   │
+│ stock            │ INT          │ NOT NULL             │ -        │ 秒杀库存(用于并发扣减)     │
+│ limit_per_user   │ INT          │ -                    │ 1        │ 每人限购数量               │
+│ start_time       │ DATETIME     │ NOT NULL             │ -        │ 秒杀开始时间               │
+│ end_time         │ DATETIME     │ NOT NULL             │ -        │ 秒杀结束时间               │
+│ status           │ TINYINT      │ -                    │ 0        │ 状态：0-未开始 1-进行 2-结束│
+│ create_time      │ DATETIME     │ -                    │ NOW()    │ 创建时间                   │
+│ update_time      │ DATETIME     │ -                    │ NOW()    │ 更新时间                   │
+└──────────────────┴──────────────┴──────────────────────┴──────────┴────────────────────────────┘
+
+索引设计:
+- idx_product_id(product_id): 按商品查询秒杀活动
+- idx_start_time(start_time): 查询即将/正在进行的活动
+- idx_status(status): 快速过滤有效活动
+
+枚举值:
+- status: 0(未开始), 1(进行中), 2(已结束)
+
+================================================================================
+TABLE 5: COUPON - 优惠券表
+================================================================================
+
+表描述:
+- 名称: coupon
+- 业务说明: 优惠券基础表，定义可发放的优惠券规则（满减/折扣/有效期/库存）
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+字段清单:
+┌──────────────────┬──────────────┬──────────────────┬──────────┬─────────────────────────────┐
+│ 字段名           │ 数据类型     │ 约束             │ 默认值   │ 业务说明                    │
+├──────────────────┼──────────────┼──────────────────┼──────────┼─────────────────────────────┤
+│ id               │ BIGINT       │ PRIMARY KEY      │ -        │ 优惠券ID                    │
+│ name             │ VARCHAR(100) │ NOT NULL         │ -        │ 优惠券名称                  │
+│ type             │ TINYINT      │ NOT NULL         │ -        │ 类型：1-满减 2-折扣        │
+│ value            │ DECIMAL(10,2)│ NOT NULL         │ -        │ 面值或折扣值                │
+│ min_amount       │ DECIMAL(10,2)│ -                │ 0        │ 最低消费金额                │
+│ total_count      │ INT          │ NOT NULL         │ -        │ 发放总量                    │
+│ remain_count     │ INT          │ NOT NULL         │ -        │ 剩余数量                    │
+│ start_time       │ DATETIME     │ NOT NULL         │ -        │ 生效开始时间                │
+│ end_time         │ DATETIME     │ NOT NULL         │ -        │ 生效结束时间                │
+│ status           │ TINYINT      │ -                │ 1        │ 状态：0-禁用 1-启用         │
+│ create_time      │ DATETIME     │ -                │ NOW()    │ 创建时间                    │
+│ update_time      │ DATETIME     │ -                │ NOW()    │ 更新时间                    │
+└──────────────────┴──────────────┴──────────────────┴──────────┴─────────────────────────────┘
+
+枚举值:
+- type: 1(满减券), 2(折扣券)
+- status: 0(禁用), 1(启用)
+
+================================================================================
+TABLE 6: ORDER - 订单表
+================================================================================
+
+表描述:
+- 名称: order
+- 业务说明: 订单主表，记录用户下单、支付、发货与收货等流程信息
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+关键字段:
+- order_no: VARCHAR(50) NOT NULL UNIQUE - 订单编号(业务单号)
+- user_id: BIGINT NOT NULL - 下单用户ID
+- total_amount: DECIMAL(10,2) NOT NULL - 订单总金额(含运费、优惠前)
+- pay_amount: DECIMAL(10,2) NOT NULL - 实付金额(实际支付)
+- freight_amount: DECIMAL(10,2) DEFAULT 0 - 运费
+- discount_amount: DECIMAL(10,2) DEFAULT 0 - 优惠总额
+- coupon_id: BIGINT - 使用的优惠券ID
+- pay_type: TINYINT - 支付类型(1-支付宝 2-微信)
+- status: TINYINT DEFAULT 0 - 订单状态(0-待支付 1-已支付 2-已发货 3-已完成 4-已取消 5-已退款)
+- receiver_name: VARCHAR(50) NOT NULL - 收货人姓名
+- receiver_phone: VARCHAR(20) NOT NULL - 收货人电话
+- receiver_address: VARCHAR(500) NOT NULL - 收货地址
+- delivery_sn: VARCHAR(100) - 物流单号
+- pay_time: DATETIME - 支付时间
+- ship_time: DATETIME - 发货时间
+- receive_time: DATETIME - 收货时间
+- create_time: DATETIME DEFAULT NOW() - 创建时间
+
+索引设计:
+- idx_user_id(user_id): 按用户查询订单
+- idx_order_no(order_no): 按业务单号检索
+- idx_status(status): 按状态筛选
+- idx_create_time(create_time): 按下单时间查询
+
+================================================================================
+TABLE 7: ORDER_ITEM - 订单明细表
+================================================================================
+
+表描述:
+- 名称: order_item
+- 业务说明: 订单明细表，保存订单内每个商品的快照信息（名称、图片、价格、数量）
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+关键字段:
+- order_id: BIGINT NOT NULL - 订单ID
+- order_no: VARCHAR(50) NOT NULL - 订单编号(快照)
+- product_id: BIGINT NOT NULL - 商品ID
+- product_name: VARCHAR(200) NOT NULL - 商品名称快照
+- product_image: VARCHAR(500) - 商品图片快照
+- price: DECIMAL(10,2) NOT NULL - 商品单价(下单时快照)
+- quantity: INT NOT NULL - 购买数量
+- total_price: DECIMAL(10,2) NOT NULL - 小计金额(price * quantity)
+- create_time: DATETIME DEFAULT NOW() - 创建时间
+
+索引设计:
+- idx_order_id(order_id): 按订单查询明细
+- idx_product_id(product_id): 按商品检索历史订单
+
+================================================================================
+TABLE 8: PRODUCT_REVIEW - 商品评价表
+================================================================================
+
+表描述:
+- 名称: product_review
+- 业务说明: 商品评价表，保存用户对商品的评分、内容与图片快照
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+关键字段:
+- product_id: BIGINT NOT NULL - 商品ID
+- user_id: BIGINT NOT NULL - 用户ID
+- order_id: BIGINT - 订单ID(用于校验购买关系)
+- rating: TINYINT NOT NULL - 评分：1-5星
+- content: TEXT - 评价内容
+- images: TEXT - 评价图片(JSON数组)
+- is_anonymous: TINYINT DEFAULT 0 - 是否匿名(0-否 1-是)
+- status: TINYINT DEFAULT 1 - 状态(0-隐藏 1-显示)
+- create_time: DATETIME DEFAULT NOW() - 创建时间
+
+索引设计:
+- idx_product_id(product_id): 按商品分页查询展示评价
+- idx_user_id(user_id): 按用户维度查询历史评价
+
+枚举值:
+- rating: 1-5
+- is_anonymous: 0(否), 1(是)
+- status: 0(隐藏), 1(显示)
+
+================================================================================
+TABLE 9: USER_ADDRESS - 用户收货地址表
+================================================================================
+
+表描述:
+- 名称: user_address
+- 业务说明: 用户收货地址表，保存用户的多个收货地址与默认地址标记
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+关键字段:
+- user_id: BIGINT NOT NULL - 所属用户ID
+- receiver_name: VARCHAR(50) NOT NULL - 收货人姓名
+- receiver_phone: VARCHAR(20) NOT NULL - 收货人电话
+- province: VARCHAR(50) NOT NULL - 省份
+- city: VARCHAR(50) NOT NULL - 城市
+- district: VARCHAR(50) NOT NULL - 区/县
+- detail_address: VARCHAR(200) NOT NULL - 详细地址
+- is_default: TINYINT DEFAULT 0 - 是否默认(0-否 1-是)
+- create_time: DATETIME DEFAULT NOW() - 创建时间
+- update_time: DATETIME DEFAULT NOW() ON UPDATE - 更新时间
+
+索引设计:
+- idx_user_id(user_id): 支持按用户检索所有地址
+
+================================================================================
+TABLE 10: USER_COUPON - 用户优惠券记录表
+================================================================================
+
+表描述:
+- 名称: user_coupon
+- 业务说明: 用户持有的优惠券记录表，记录用户领取/使用的优惠券状态与使用时间
+- 主键策略: id BIGINT AUTO_INCREMENT
+
+关键字段:
+- user_id: BIGINT NOT NULL - 用户ID
+- coupon_id: BIGINT NOT NULL - 优惠券ID
+- status: TINYINT DEFAULT 0 - 使用状态(0-未使用 1-已使用 2-已过期)
+- used_time: DATETIME - 使用时间
+- order_id: BIGINT - 使用时关联的订单ID
+- create_time: DATETIME DEFAULT NOW() - 记录创建时间(领取时间)
+
+索引设计:
+- idx_user_id(user_id): 查询某用户所有持有的优惠券
+- idx_coupon_id(coupon_id): 统计或回溯某张优惠券的发放/领取
+
+枚举值:
+- status: 0(未使用), 1(已使用), 2(已过期)
+
+================================================================================
+关键业务规则
+================================================================================
+
+1. 用户管理:
+   - 登录: 支持用户名/密码、手机号/验证码登录
+   - 角色: USER(普通用户) / ADMIN(管理员)
+   - 认证: JWT Token + 拦截器权限控制
+   - Token Header: Authorization: Bearer <token>
+
+2. 商品管理:
+   - 支持分类树形展示(一级/二级分类)
+   - 支持全文检索(MyBatis FULLTEXT)
+   - 热销/新品/热门标签
+   - 支持按价格区间、销量排序
+
+3. 订单流程:
+   - 订单状态: 待支付 -> 已支付 -> 已发货 -> 已完成
+   - 可支持取消、退款状态
+   - 使用订单号作为业务唯一标识
+   - 支持使用优惠券和运费计算
+
+4. 秒杀设计:
+   - 基于时间窗口的限时活动
+   - 支持每人限购数量限制
+   - 使用 Redis 预减库存 + RabbitMQ 异步下单
+   - 使用分布式锁防止超卖
+
+5. 优惠券:
+   - 支持满减券和折扣券两种类型
+   - 支持有效期时间范围限制
+   - 记录用户领取/使用状态
+   - 支持库存管理
+
+================================================================================
+响应状态码说明
+================================================================================
+
+HTTP Status | 业务状态码 | 含义
+============|============|==========================================
+200         | 200        | 操作成功
+400         | 400        | 请求参数错误
+401         | 401        | 未登录或Token过期
+403         | 403        | 无权限访问
+404         | 404        | 资源不存在
+500         | 500        | 服务器内部错误
+            | 1001       | 用户不存在
+            | 1002       | 密码错误
+            | 1003       | 用户已存在
+            | 1004       | 手机号已注册
+            | 2001       | 商品不存在
+            | 2002       | 库存不足
+            | 3001       | 订单不存在
+            | 3002       | 订单状态异常
+            | 4001       | 优惠券不存在
+            | 4002       | 优惠券已过期
+            | 4003       | 优惠券已领完
+            | 5001       | 秒杀未开始
+            | 5002       | 秒杀已结束
+            | 5003       | 已参与过秒杀
+
+================================================================================
+统一 API 响应格式
+================================================================================
+
+所有接口统一返回 JSON 格式:
+
+{
+    "code": 200,           // 状态码
+    "message": "操作成功",  // 提示消息
+    "data": {}             // 实际数据(可为对象、数组或null)
+}
+
+分页响应示例:
+
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "total": 100,      // 总记录数
+        "pages": 10,       // 总页数
+        "pageNum": 1,      // 当前页码
+        "pageSize": 10,    // 每页数量
+        "list": [...]      // 数据列表
+    }
+}
+
+================================================================================
+前端所需数据模型参考
+================================================================================
+
+User Model:
+{
+  id: number
+  username: string
+  phone?: string
+  email?: string
+  nickname?: string
+  avatar?: string
+  gender: 0|1|2        // 0-未知 1-男 2-女
+  points: number
+  status: 0|1           // 0-禁用 1-正常
+  role: 'USER'|'ADMIN'
+  createTime: string    // ISO datetime
+  updateTime: string
+}
+
+Product Model:
+{
+  id: number
+  name: string
+  subtitle?: string
+  categoryId: number
+  categoryName: string
+  price: number
+  originalPrice?: number
+  stock: number
+  sales: number
+  status: 0|1           // 0-下架 1-上架
+  isHot: 0|1
+  isNew: 0|1
+  mainImage?: string
+  images?: string[]
+  createTime: string
+}
+
+Category Model:
+{
+  id: number
+  name: string
+  parentId: number      // 0表示一级分类
+  level: 1|2
+  icon?: string
+  sortOrder: number
+  children?: Category[]
+}
+
+Order Model:
+{
+  id: number
+  orderNo: string       // 业务单号
+  userId: number
+  totalAmount: number
+  payAmount: number
+  discountAmount: number
+  status: 0|1|2|3|4|5
+  payType?: 1|2
+  couponId?: number
+  receiverName: string
+  receiverPhone: string
+  receiverAddress: string
+  createTime: string
+  payTime?: string
+  shipTime?: string
+  receiveTime?: string
+  items: OrderItem[]
+}
+
+OrderItem Model:
+{
+  id: number
+  orderId: number
+  productId: number
+  productName: string
+  price: number
+  quantity: number
+  totalPrice: number
+}
+
+Coupon Model:
+{
+  id: number
+  name: string
+  type: 1|2             // 1-满减 2-折扣
+  value: number
+  minAmount: number
+  totalCount: number
+  remainCount: number
+  startTime: string
+  endTime: string
+  status: 0|1
+}
+
+Seckill Model:
+{
+  id: number
+  productId: number
+  seckillPrice: number
+  stock: number
+  limitPerUser: number
+  startTime: string
+  endTime: string
+  status: 0|1|2
+}
+
+================================================================================
+文档使用说明
+================================================================================
+
+此文档用于生成管理端前端，包含:
+1. 完整数据库 Schema 说明
+2. 所有关键表的字段、索引、枚举说明
+3. 前端所需数据模型参考
+4. 业务规则和状态定义
+
+使用本文档生成管理端时应包括:
+- 用户管理 (User CRUD, 列表, 搜索, 分页, 权限管理)
+- 商品管理 (Product CRUD, 分类管理, 上下架)
+- 订单管理 (Order 列表, 详情, 状态流转, 导出)
+- 优惠券管理 (Coupon CRUD, 领取统计)
+- 秒杀管理 (Seckill 活动管理, 时间设置)
+- 评价管理 (Review 审核, 隐藏/显示)
+- 地址管理 (UserAddress 维护)
+
+================================================================================
+END OF DOCUMENT
+================================================================================

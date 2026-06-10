@@ -2,6 +2,7 @@ package eden.service;
 
 import eden.pojo.User;
 import eden.pojo.dto.LoginDTO;
+import eden.pojo.dto.PasswordResetDTO;
 import eden.pojo.dto.RegisterDTO;
 import eden.pojo.vo.LoginVO;
 import eden.pojo.vo.UserVO;
@@ -50,6 +51,16 @@ public interface UserService {
      * 修改密码
      */
     void changePassword(Long userId, String oldPassword, String newPassword);
+
+    /**
+     * 发送找回密码验证码，当前以 Redis 缓存 + 服务端日志模拟短信发送。
+     */
+    void sendPasswordResetCode(String phone);
+
+    /**
+     * 校验找回密码验证码并重置密码，成功后删除一次性验证码。
+     */
+    void resetPassword(PasswordResetDTO resetDTO);
 
     /**
      * 更新用户积分

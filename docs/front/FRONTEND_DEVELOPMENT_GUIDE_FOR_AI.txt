@@ -1,0 +1,683 @@
+================================================================================
+EDEN NUTRITION E-COMMERCE PLATFORM - FRONTEND DEVELOPMENT GUIDE
+伊甸滋补线上商店 - 前端开发指南
+================================================================================
+Version: 2.0.0
+Generated: 2026-04-28
+Purpose: 用户端前端项目结构与开发指南
+
+================================================================================
+项目基本信息
+================================================================================
+
+项目名称: Eden Nutrition User Frontend
+项目类型: Vue 3 + TypeScript + Vite 用户端商城前端
+
+技术栈:
+- 框架: Vue 3
+- 语言: TypeScript
+- 构建工具: Vite
+- 状态管理: Pinia
+- 路由: Vue Router 4
+- UI 组件库: Element Plus
+- HTTP 客户端: Axios
+- 国际化: vue-i18n
+- 表单校验: vee-validate + yup
+- 代码质量: ESLint + Prettier
+- 测试: Vitest + Playwright
+
+Node.js 版本: 18.x 或以上
+Package Manager: npm 或 pnpm
+
+================================================================================
+后端服务信息
+================================================================================
+
+API Base URL: http://localhost:8080/api
+Swagger UI: http://localhost:8080/api/swagger-ui.html
+Knife4j: http://localhost:8080/api/doc.html
+
+数据库: MySQL 8.0 (eden_db)
+Redis: localhost:6379
+RabbitMQ: localhost:5672
+
+后端服务启动命令: mvn clean spring-boot:run
+或通过 Docker: docker-compose up
+
+================================================================================
+推荐的前端目录结构
+================================================================================
+
+user-frontend/
+├── public/
+│   ├── favicon.ico
+│   └── index.html
+├── src/
+│   ├── api/
+│   │   ├── modules/
+│   │   │   ├── auth.ts           # 登录/注册/登出/个人信息
+│   │   │   ├── product.ts        # 商品浏览/详情/搜索
+│   │   │   ├── category.ts       # 分类树
+│   │   │   ├── cart.ts           # 购物车
+│   │   │   ├── order.ts          # 下单/订单/支付
+│   │   │   ├── coupon.ts         # 优惠券
+│   │   │   ├── address.ts        # 收货地址
+│   │   │   ├── seckill.ts        # 秒杀活动
+│   │   │   └── review.ts         # 商品评价
+│   │   ├── client.ts
+│   │   └── index.ts
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── AppHeader.vue
+│   │   │   ├── AppFooter.vue
+│   │   │   ├── ProductCard.vue
+│   │   │   ├── ProductGrid.vue
+│   │   │   ├── QuantityStepper.vue
+│   │   │   ├── CouponTag.vue
+│   │   │   ├── StatusBadge.vue
+│   │   │   └── ConfirmDialog.vue
+│   │   └── business/
+│   │       ├── cart/
+│   │       ├── checkout/
+│   │       ├── order/
+│   │       └── product/
+│   ├── layouts/
+│   │   ├── ShopLayout.vue         # 用户端主布局
+│   │   ├── AuthLayout.vue         # 登录/注册布局
+│   │   └── AccountLayout.vue      # 个人中心布局
+│   ├── pages/
+│   │   ├── home/index.vue         # 首页/推荐/活动
+│   │   ├── login/index.vue        # 登录页
+│   │   ├── register/index.vue     # 注册页
+│   │   ├── search/index.vue       # 搜索结果页
+│   │   ├── category/index.vue     # 分类列表页
+│   │   ├── product/list.vue       # 商品列表页
+│   │   ├── product/detail.vue     # 商品详情页
+│   │   ├── cart/index.vue         # 购物车页
+│   │   ├── checkout/index.vue     # 确认订单页
+│   │   ├── order/list.vue         # 我的订单
+│   │   ├── order/detail.vue       # 订单详情
+│   │   ├── coupon/list.vue        # 我的优惠券
+│   │   ├── address/list.vue       # 收货地址管理
+│   │   ├── profile/index.vue      # 个人中心
+│   │   ├── seckill/index.vue      # 秒杀活动
+│   │   ├── review/list.vue        # 我的评价/商品评价
+│   │   ├── favorite/index.vue     # 收藏夹（可选）
+│   │   ├── 401.vue
+│   │   ├── 403.vue
+│   │   └── 404.vue
+│   ├── router/
+│   │   ├── index.ts
+│   │   ├── guards.ts
+│   │   └── routes/
+│   │       ├── auth.ts
+│   │       ├── shop.ts
+│   │       ├── account.ts
+│   │       └── error.ts
+│   ├── store/
+│   │   ├── modules/
+│   │   │   ├── auth.ts
+│   │   │   ├── user.ts
+│   │   │   ├── product.ts
+│   │   │   ├── cart.ts
+│   │   │   ├── order.ts
+│   │   │   ├── coupon.ts
+│   │   │   ├── address.ts
+│   │   │   └── app.ts
+│   │   └── index.ts
+│   ├── styles/
+│   │   ├── variables.css
+│   │   ├── global.css
+│   │   ├── reset.css
+│   │   └── utils.css
+│   ├── types/
+│   │   ├── api.ts
+│   │   ├── models.ts
+│   │   └── common.ts
+│   ├── utils/
+│   │   ├── request.ts
+│   │   ├── storage.ts
+│   │   ├── validators.ts
+│   │   ├── format.ts
+│   │   ├── permission.ts
+│   │   └── price.ts
+│   ├── i18n/
+│   │   ├── index.ts
+│   │   └── locales/
+│   │       ├── zh-CN.ts
+│   │       └── en-US.ts
+│   ├── App.vue
+│   └── main.ts
+├── tests/
+│   ├── unit/
+│   └── e2e/
+├── .env
+├── .env.development
+├── .env.production
+├── vite.config.ts
+├── tsconfig.json
+├── eslint.config.js
+├── prettier.config.js
+├── vitest.config.ts
+├── playwright.config.ts
+├── package.json
+└── README.md
+
+================================================================================
+核心页面清单
+================================================================================
+
+1. 首页 (pages/home/index.vue)
+   - 活动轮播图
+   - 秒杀入口
+   - 热销商品推荐
+   - 新品推荐
+   - 分类快捷入口
+
+2. 登录页 / 注册页 (pages/login/index.vue, pages/register/index.vue)
+   - 用户名密码登录
+   - 手机号/验证码登录（可选）
+   - 注册、找回密码（可选）
+   - Token 存储与跳转回跳
+
+3. 商品列表页 (pages/product/list.vue)
+   - 搜索、分类筛选、价格区间筛选
+   - 销量/价格/上新排序
+   - 分页加载
+   - 加入购物车、收藏、查看详情
+
+4. 商品详情页 (pages/product/detail.vue)
+   - 商品图片轮播
+   - 商品基础信息与库存状态
+   - 商品详情图文
+   - 规格/评价/推荐商品
+   - 加入购物车、立即购买、秒杀购买
+
+5. 购物车页 (pages/cart/index.vue)
+   - 商品勾选、数量调整、删除
+   - 价格汇总
+   - 优惠券预估
+   - 去结算
+
+6. 确认订单页 (pages/checkout/index.vue)
+   - 收货地址选择
+   - 商品清单与价格确认
+   - 优惠券选择
+   - 支付方式选择
+   - 提交订单
+
+7. 我的订单页 (pages/order/list.vue)
+   - 订单状态筛选
+   - 订单列表分页
+   - 取消订单、去支付、确认收货
+
+8. 订单详情页 (pages/order/detail.vue)
+   - 订单信息、商品明细、物流信息
+   - 支付时间、发货时间、收货时间
+   - 售后/评价入口
+
+9. 个人中心 (pages/profile/index.vue)
+   - 用户信息修改
+   - 头像、昵称、性别、邮箱
+   - 修改密码
+
+10. 地址与优惠券
+   - 收货地址管理 (pages/address/list.vue)
+   - 我的优惠券 (pages/coupon/list.vue)
+   - 秒杀活动列表 (pages/seckill/index.vue)
+   - 商品评价 (pages/review/list.vue)
+
+================================================================================
+核心 API 模块设计
+================================================================================
+
+api/modules/auth.ts:
+---
+export interface LoginDTO {
+  username: string
+  password: string
+}
+
+export interface RegisterDTO {
+  username: string
+  password: string
+  phone?: string
+  verifyCode?: string
+}
+
+export const authApi = {
+  login(data: LoginDTO) {
+    return request.post('/user/login', data)
+  },
+  register(data: RegisterDTO) {
+    return request.post('/user/register', data)
+  },
+  logout() {
+    return request.post('/user/logout')
+  },
+  getCurrentUser() {
+    return request.get('/user/info')
+  },
+  updateProfile(data: { nickname?: string; avatar?: string; gender?: number; email?: string }) {
+    return request.put('/user/info', data)
+  }
+}
+
+api/modules/product.ts:
+---
+export const productApi = {
+  getProductList(params: { keyword?: string; categoryId?: number; minPrice?: number; maxPrice?: number; sortBy?: string; sortOrder?: string; pageNum?: number; pageSize?: number }) {
+    return request.get('/product/list', { params })
+  },
+  getProductDetail(id: number) {
+    return request.get(`/product/${id}`)
+  },
+  getHotProducts(limit = 10) {
+    return request.get('/product/hot', { params: { limit } })
+  },
+  getNewProducts(limit = 10) {
+    return request.get('/product/new', { params: { limit } })
+  }
+}
+
+api/modules/cart.ts:
+---
+export const cartApi = {
+  getCartList() {
+    return request.get('/cart/list')
+  },
+  addToCart(data: { productId: number; quantity: number }) {
+    return request.post('/cart/add', data)
+  },
+  updateCartItem(data: { productId: number; quantity: number }) {
+    return request.put('/cart/update', data)
+  },
+  removeCartItem(productId: number) {
+    return request.delete(`/cart/${productId}`)
+  },
+  clearCart() {
+    return request.delete('/cart/clear')
+  }
+}
+
+api/modules/order.ts:
+---
+export const orderApi = {
+  createOrder(data: { items: Array<{ productId: number; quantity: number; price: number }>; receiverName: string; receiverPhone: string; receiverAddress: string; couponId?: number; remark?: string }) {
+    return request.post('/order/create', data)
+  },
+  getOrderList(params: { status?: number; pageNum?: number; pageSize?: number }) {
+    return request.get('/order/list', { params })
+  },
+  getOrderDetail(id: number) {
+    return request.get(`/order/${id}`)
+  },
+  cancelOrder(id: number, reason?: string) {
+    return request.post(`/order/${id}/cancel`, { reason })
+  },
+  payOrder(id: number, payType: number, amount: number) {
+    return request.post(`/order/${id}/pay`, { payType, amount })
+  }
+}
+
+api/modules/address.ts:
+---
+export const addressApi = {
+  getAddressList() {
+    return request.get('/address/list')
+  },
+  addAddress(data: { receiverName: string; receiverPhone: string; province: string; city: string; district: string; detailAddress: string; isDefault?: number }) {
+    return request.post('/address/add', data)
+  },
+  updateAddress(id: number, data: Partial<{ receiverName: string; receiverPhone: string; province: string; city: string; district: string; detailAddress: string; isDefault: number }>) {
+    return request.put(`/address/${id}`, data)
+  },
+  deleteAddress(id: number) {
+    return request.delete(`/address/${id}`)
+  },
+  setDefaultAddress(id: number) {
+    return request.post(`/address/${id}/set-default`)
+  }
+}
+
+================================================================================
+Pinia 状态管理模块设计
+================================================================================
+
+store/modules/auth.ts:
+---
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    token: localStorage.getItem('token') || '',
+    user: null as User | null
+  }),
+  getters: {
+    isLoggedIn: (state) => !!state.token
+  },
+  actions: {
+    async login(data: LoginDTO) {
+      const response = await authApi.login(data)
+      this.token = response.token
+      localStorage.setItem('token', this.token)
+      await this.fetchCurrentUser()
+      return response
+    },
+    async fetchCurrentUser() {
+      this.user = await authApi.getCurrentUser()
+    },
+    logout() {
+      this.token = ''
+      this.user = null
+      localStorage.removeItem('token')
+    }
+  }
+})
+
+store/modules/cart.ts:
+---
+export const useCartStore = defineStore('cart', {
+  state: () => ({
+    items: [] as CartItem[],
+    totalCount: 0,
+    totalAmount: 0,
+    loading: false
+  }),
+  actions: {
+    async fetchCart() {
+      this.loading = true
+      try {
+        this.items = await cartApi.getCartList()
+      } finally {
+        this.loading = false
+      }
+    }
+  }
+})
+
+store/modules/order.ts:
+---
+export const useOrderStore = defineStore('order', {
+  state: () => ({
+    orders: [] as Order[],
+    total: 0,
+    loading: false,
+    filters: {
+      status: undefined as number | undefined,
+      pageNum: 1,
+      pageSize: 10
+    }
+  }),
+  actions: {
+    async fetchOrders() {
+      this.loading = true
+      try {
+        const response = await orderApi.getOrderList(this.filters)
+        this.orders = response.list
+        this.total = response.total
+      } finally {
+        this.loading = false
+      }
+    }
+  }
+})
+
+================================================================================
+路由定义示例
+================================================================================
+
+router/index.ts:
+---
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    component: () => import('@/layouts/ShopLayout.vue'),
+    children: [
+      { path: '', redirect: '/home' },
+      { path: 'home', component: () => import('@/pages/home/index.vue'), meta: { title: '首页' } },
+      { path: 'search', component: () => import('@/pages/search/index.vue'), meta: { title: '搜索结果' } },
+      { path: 'category/:id', component: () => import('@/pages/category/index.vue'), meta: { title: '分类列表' } },
+      { path: 'product/:id', component: () => import('@/pages/product/detail.vue'), meta: { title: '商品详情' } },
+      { path: 'cart', component: () => import('@/pages/cart/index.vue'), meta: { title: '购物车', requiresAuth: true } },
+      { path: 'checkout', component: () => import('@/pages/checkout/index.vue'), meta: { title: '确认订单', requiresAuth: true } },
+      { path: 'order', component: () => import('@/pages/order/list.vue'), meta: { title: '我的订单', requiresAuth: true } },
+      { path: 'order/:id', component: () => import('@/pages/order/detail.vue'), meta: { title: '订单详情', requiresAuth: true } },
+      { path: 'coupon', component: () => import('@/pages/coupon/list.vue'), meta: { title: '我的优惠券', requiresAuth: true } },
+      { path: 'address', component: () => import('@/pages/address/list.vue'), meta: { title: '收货地址', requiresAuth: true } },
+      { path: 'profile', component: () => import('@/pages/profile/index.vue'), meta: { title: '个人中心', requiresAuth: true } },
+      { path: 'seckill', component: () => import('@/pages/seckill/index.vue'), meta: { title: '秒杀活动' } },
+      { path: 'review', component: () => import('@/pages/review/list.vue'), meta: { title: '我的评价', requiresAuth: true } }
+    ]
+  },
+  {
+    path: '/auth',
+    component: () => import('@/layouts/AuthLayout.vue'),
+    children: [
+      { path: 'login', component: () => import('@/pages/login/index.vue'), meta: { title: '登录' } },
+      { path: 'register', component: () => import('@/pages/register/index.vue'), meta: { title: '注册' } }
+    ]
+  },
+  {
+    path: '/401',
+    component: () => import('@/pages/401.vue')
+  },
+  {
+    path: '/403',
+    component: () => import('@/pages/403.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/pages/404.vue')
+  }
+]
+
+router/guards.ts:
+---
+export function setupRouterGuards(router: Router) {
+  router.beforeEach((to, from, next) => {
+    const authStore = useAuthStore()
+    document.title = `${(to.meta.title as string) || 'Eden Nutrition'} - Eden Nutrition`
+    if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+      next('/auth/login')
+      return
+    }
+    next()
+  })
+}
+
+================================================================================
+表单校验规则示例
+================================================================================
+
+utils/validators.ts:
+---
+import * as yup from 'yup'
+
+export const loginSchema = yup.object({
+  username: yup.string().required('请输入用户名'),
+  password: yup.string().required('请输入密码')
+})
+
+export const registerSchema = yup.object({
+  username: yup.string().required('用户名不能为空').min(4, '用户名至少4个字符').max(20, '用户名最多20个字符'),
+  password: yup.string().required('密码不能为空').min(6, '密码至少6个字符').max(20, '密码最多20个字符'),
+  phone: yup.string().matches(/^1\d{10}$/, '手机号格式不正确').nullable(),
+  verifyCode: yup.string().nullable()
+})
+
+export const addressSchema = yup.object({
+  receiverName: yup.string().required('收货人姓名不能为空').max(50, '最多50个字符'),
+  receiverPhone: yup.string().required('收货人电话不能为空').matches(/^1\d{10}$/, '手机号格式不正确'),
+  province: yup.string().required('省份不能为空'),
+  city: yup.string().required('城市不能为空'),
+  district: yup.string().required('区县不能为空'),
+  detailAddress: yup.string().required('详细地址不能为空').max(200, '最多200个字符')
+})
+
+export const orderCreateSchema = yup.object({
+  receiverName: yup.string().required('收货人姓名不能为空'),
+  receiverPhone: yup.string().required('收货人电话不能为空'),
+  receiverAddress: yup.string().required('收货地址不能为空')
+})
+
+================================================================================
+通用组件示例
+================================================================================
+
+components/common/ProductCard.vue:
+---
+商品卡片，展示图片、名称、价格、销量、秒杀标记、加入购物车按钮。
+
+components/common/ProductGrid.vue:
+---
+商品瀑布/网格列表，支持空状态、加载状态、分页与懒加载。
+
+components/common/QuantityStepper.vue:
+---
+数量步进器，用于购物车和秒杀下单。
+
+components/common/CouponTag.vue:
+---
+优惠券标签，展示满减/折扣、有效期、门槛金额。
+
+components/common/StatusBadge.vue:
+---
+状态徽标，适用于订单状态、优惠券状态、秒杀状态。
+
+components/common/ConfirmDialog.vue:
+---
+确认对话框，用于删除地址、取消订单、退出登录等操作。
+
+================================================================================
+开发与构建命令
+================================================================================
+
+安装依赖:
+npm install
+或
+pnpm install
+
+启动开发服务器:
+npm run dev
+
+构建生产版本:
+npm run build
+
+预览生产构建:
+npm run preview
+
+运行单元测试:
+npm run test
+
+运行 E2E 测试:
+npm run test:e2e
+
+代码检查:
+npm run lint
+
+格式化代码:
+npm run format
+
+================================================================================
+环境变量配置
+================================================================================
+
+.env.development:
+VITE_APP_TITLE=Eden Nutrition
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_APP_ENV=development
+
+.env.production:
+VITE_APP_TITLE=Eden Nutrition
+VITE_API_BASE_URL=https://api.example.com/api
+VITE_APP_ENV=production
+
+================================================================================
+权限与状态设计
+================================================================================
+
+用户端一般不使用复杂 RBAC，只需要:
+- 是否登录
+- 是否拥有管理员身份（如需要隐藏入口）
+- 订单状态、优惠券状态、秒杀状态的展示映射
+
+建议状态映射:
+- 订单状态: 0待支付 / 1已支付 / 2已发货 / 3已完成 / 4已取消 / 5已退款
+- 优惠券状态: 0未使用 / 1已使用 / 2已过期
+- 秒杀状态: 0未开始 / 1进行中 / 2已结束
+
+================================================================================
+通用 HTTP 请求配置
+================================================================================
+
+api/client.ts:
+---
+import axios, { AxiosInstance } from 'axios'
+
+const client: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+client.interceptors.request.use((config) => {
+  const authStore = useAuthStore()
+  if (authStore.token) {
+    config.headers.Authorization = `Bearer ${authStore.token}`
+  }
+  return config
+})
+
+client.interceptors.response.use(
+  (response) => {
+    const { code, data, message } = response.data
+    if (code === 200) {
+      return data
+    }
+    ElMessage.error(message || '操作失败')
+    throw new Error(message)
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore()
+      authStore.logout()
+      router.push('/auth/login')
+    }
+    return Promise.reject(error)
+  }
+)
+
+export default client
+
+================================================================================
+可直接发送给 AI Studio 的建议提示词
+================================================================================
+
+你是资深 Vue 3 前端工程师。请为一个 Java Spring Boot + MyBatis 电商后端项目生成一个可交付的用户端前端工程。
+
+技术栈要求:
+- Vue 3 + TypeScript + Vite + Pinia + Vue Router + Element Plus
+
+目标类型:
+- 用户端商城前端，不是管理端后台
+
+必须优先实现的功能:
+1. 首页、商品列表、商品详情
+2. 登录/注册/登出/个人中心
+3. 购物车、确认订单、订单列表、订单详情
+4. 收货地址管理、优惠券、秒杀活动、商品评价
+5. API 适配层、路由守卫、Pinia 状态管理、通用组件
+
+输出要求:
+- 先给出项目目录树
+- 再给出每个文件的完整代码
+- 代码必须可直接写入项目
+- 对于后端未明确的字段，请使用占位符并标注 TODO
+- 最后附上安装、开发、构建、测试命令
+
+请直接开始，不要先询问。
+
+================================================================================
+END OF DOCUMENT
+================================================================================

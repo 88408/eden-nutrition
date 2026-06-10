@@ -6,6 +6,7 @@ import eden.pojo.dto.ProductQueryDTO;
 import eden.pojo.vo.PageVO;
 import eden.pojo.vo.ProductVO;
 import eden.service.ProductService;
+import eden.service.ProductSkuService;
 import eden.web.annotation.CurrentUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,11 +29,16 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private ProductSkuService productSkuService;
+
     @ApiOperation("获取商品详情")
     @GetMapping("/{id}")
     public Result<ProductVO> getById(@PathVariable Long id) {
         Product product = productService.getById(id);
-        return Result.success(ProductVO.fromProduct(product));
+        ProductVO vo = ProductVO.fromProduct(product);
+        vo.setSkuList(productSkuService.listByProductId(id));
+        return Result.success(vo);
     }
 
     @ApiOperation("商品列表查询")

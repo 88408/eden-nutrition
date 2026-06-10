@@ -18,6 +18,12 @@ public class CartItem implements Serializable {
     /** 商品ID */
     private Long productId;
 
+    /** 商品 SKU ID；为空表示历史普通商品购物车项 */
+    private Long skuId;
+
+    /** SKU 规格快照，用于购物车展示和下单时写入订单明细 */
+    private String skuSpecName;
+
     /** 商品名称 */
     private String productName;
 

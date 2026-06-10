@@ -42,15 +42,18 @@ public class CartController {
     @PutMapping("/quantity")
     public Result<Void> updateQuantity(@CurrentUser Long userId,
                                        @RequestParam Long productId,
+                                       @RequestParam(required = false) Long skuId,
                                        @RequestParam Integer quantity) {
-        cartService.updateQuantity(userId, productId, quantity);
+        cartService.updateQuantity(userId, productId, skuId, quantity);
         return Result.success();
     }
 
     @ApiOperation("删除购物车商品")
     @DeleteMapping("/{productId}")
-    public Result<Void> removeFromCart(@CurrentUser Long userId, @PathVariable Long productId) {
-        cartService.removeFromCart(userId, productId);
+    public Result<Void> removeFromCart(@CurrentUser Long userId,
+                                       @PathVariable Long productId,
+                                       @RequestParam(required = false) Long skuId) {
+        cartService.removeFromCart(userId, productId, skuId);
         return Result.success();
     }
 
@@ -72,8 +75,9 @@ public class CartController {
     @PutMapping("/select")
     public Result<Void> selectItem(@CurrentUser Long userId,
                                    @RequestParam Long productId,
+                                   @RequestParam(required = false) Long skuId,
                                    @RequestParam Boolean selected) {
-        cartService.selectItem(userId, productId, selected);
+        cartService.selectItem(userId, productId, skuId, selected);
         return Result.success();
     }
 

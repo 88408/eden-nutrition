@@ -31,6 +31,9 @@ public class OrderConstants {
     /** 已退款 */
     public static final int STATUS_REFUNDED = 7;
 
+    /** 退款拒绝 */
+    public static final int STATUS_REFUND_REJECTED = 8;
+
     // ============================= 支付方式 =============================
 
     /** 支付宝 */

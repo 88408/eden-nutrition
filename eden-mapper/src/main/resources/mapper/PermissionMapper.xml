@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.PermissionMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.Permission">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="path" property="path"/>
+        <result column="component" property="component"/>
+        <result column="icon" property="icon"/>
+        <result column="type" property="type"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, parent_id, name, code, path, component, icon, type, sort_order, status, create_time, update_time
+    </sql>
+
+    <select id="selectAllEnabled" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM permission
+        WHERE status = 1
+        ORDER BY parent_id ASC, sort_order ASC, id ASC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT DISTINCT p.id, p.parent_id, p.name, p.code, p.path, p.component, p.icon, p.type, p.sort_order, p.status, p.create_time, p.update_time
+        FROM permission p
+        INNER JOIN role_permission rp ON rp.permission_id = p.id
+        INNER JOIN user_role ur ON ur.role_id = rp.role_id
+        INNER JOIN role r ON r.id = ur.role_id AND r.status = 1
+        WHERE ur.user_id = #{userId}
+          AND p.status = 1
+        ORDER BY p.parent_id ASC, p.sort_order ASC, p.id ASC
+    </select>
+
+    <select id="selectCodesByUserId" resultType="string">
+        SELECT DISTINCT p.code
+        FROM permission p
+        INNER JOIN role_permission rp ON rp.permission_id = p.id
+        INNER JOIN user_role ur ON ur.role_id = rp.role_id
+        INNER JOIN role r ON r.id = ur.role_id AND r.status = 1
+        WHERE ur.user_id = #{userId}
+          AND p.status = 1
+          AND p.code IS NOT NULL
+          AND p.code != ''
+    </select>
+
+    <select id="selectByRoleId" resultMap="BaseResultMap">
+        SELECT p.id, p.parent_id, p.name, p.code, p.path, p.component, p.icon, p.type, p.sort_order, p.status, p.create_time, p.update_time
+        FROM permission p
+        INNER JOIN role_permission rp ON rp.permission_id = p.id
+        WHERE rp.role_id = #{roleId}
+        ORDER BY p.parent_id ASC, p.sort_order ASC, p.id ASC
+    </select>
+</mapper>

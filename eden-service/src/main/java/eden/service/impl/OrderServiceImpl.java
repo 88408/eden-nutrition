@@ -49,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
     private ProductService productService;
 
     @Autowired
+    private ProductSkuService productSkuService;
+
+    @Autowired
     private UserAddressService userAddressService;
 
     @Autowired
@@ -83,42 +86,56 @@ public class OrderServiceImpl implements OrderService {
                 throw new BusinessException(ResultCode.ADDRESS_NOT_FOUND);
             }
 
-            // 获取购物车中选中的商品
-            CartVO cart = cartService.getCart(userId);
-            List<CartItemVO> selectedItems = new ArrayList<>();
-            for (CartItemVO item : cart.getItems()) {
-                if (item.getSelected() != null && item.getSelected()) {
-                    selectedItems.add(item);
-                }
-            }
-
-            if (selectedItems.isEmpty()) {
-                throw new BusinessException(ResultCode.CART_EMPTY);
-            }
-
             // 计算订单金额
             BigDecimal totalAmount = BigDecimal.ZERO;
             List<OrderItem> orderItems = new ArrayList<>();
-
-            for (CartItemVO cartItem : selectedItems) {
-                // 检查库存并扣减
-                boolean success = productService.decreaseStock(cartItem.getProductId(), cartItem.getQuantity());
-                if (!success) {
-                    throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH, 
-                            "商品\"" + cartItem.getProductName() + "\"库存不足");
+            List<CartItemVO> selectedItems = new ArrayList<>();
+            boolean useSkuItems = createDTO.getSkuItems() != null && !createDTO.getSkuItems().isEmpty();
+            if (useSkuItems) {
+                for (OrderCreateDTO.OrderSkuItemDTO skuItem : createDTO.getSkuItems()) {
+                    OrderItem orderItem = buildOrderItemFromSku(skuItem);
+                    totalAmount = totalAmount.add(orderItem.getTotalPrice());
+                    orderItems.add(orderItem);
+                }
+            } else {
+                // 旧购物车链路继续读取选中商品，避免已有用户端页面和测试用例失效。
+                CartVO cart = cartService.getCart(userId);
+                for (CartItemVO item : cart.getItems()) {
+                    if (item.getSelected() != null && item.getSelected()) {
+                        selectedItems.add(item);
+                    }
                 }
 
-                totalAmount = totalAmount.add(cartItem.getSubtotal());
+                if (selectedItems.isEmpty()) {
+                    throw new BusinessException(ResultCode.CART_EMPTY);
+                }
 
-                // 创建订单项
-                OrderItem orderItem = new OrderItem();
-                orderItem.setProductId(cartItem.getProductId());
-                orderItem.setProductName(cartItem.getProductName());
-                orderItem.setProductImage(cartItem.getProductImage());
-                orderItem.setPrice(cartItem.getPrice());
-                orderItem.setQuantity(cartItem.getQuantity());
-                orderItem.setTotalPrice(cartItem.getSubtotal());
-                orderItems.add(orderItem);
+                for (CartItemVO cartItem : selectedItems) {
+                    OrderItem orderItem;
+                    if (cartItem.getSkuId() != null) {
+                        // 购物车 SKU 项复用直购 SKU 构建逻辑，保证库存扣减、价格、规格快照完全一致。
+                        OrderCreateDTO.OrderSkuItemDTO skuItem = new OrderCreateDTO.OrderSkuItemDTO();
+                        skuItem.setProductId(cartItem.getProductId());
+                        skuItem.setSkuId(cartItem.getSkuId());
+                        skuItem.setQuantity(cartItem.getQuantity());
+                        orderItem = buildOrderItemFromSku(skuItem);
+                    } else {
+                        boolean success = productService.decreaseStock(cartItem.getProductId(), cartItem.getQuantity());
+                        if (!success) {
+                            throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH,
+                                    "商品\"" + cartItem.getProductName() + "\"库存不足");
+                        }
+                        orderItem = new OrderItem();
+                        orderItem.setProductId(cartItem.getProductId());
+                        orderItem.setProductName(cartItem.getProductName());
+                        orderItem.setProductImage(cartItem.getProductImage());
+                        orderItem.setPrice(cartItem.getPrice());
+                        orderItem.setQuantity(cartItem.getQuantity());
+                        orderItem.setTotalPrice(cartItem.getSubtotal());
+                    }
+                    totalAmount = totalAmount.add(orderItem.getTotalPrice());
+                    orderItems.add(orderItem);
+                }
             }
 
             // 计算运费
@@ -190,9 +207,11 @@ public class OrderServiceImpl implements OrderService {
                 couponService.useCoupon(createDTO.getUserCouponId(), order.getId());
             }
 
-            // 清除购物车中已购买的商品
-            for (CartItemVO item : selectedItems) {
-                cartService.removeFromCart(userId, item.getProductId());
+            // SKU 直购不清理购物车；旧购物车链路才移除已购买商品。
+            if (!useSkuItems) {
+                for (CartItemVO item : selectedItems) {
+                    cartService.removeFromCart(userId, item.getProductId(), item.getSkuId());
+                }
             }
 
             // 发送延迟消息，处理订单超时
@@ -215,6 +234,60 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getByOrderNo(String orderNo) {
         return orderMapper.selectByOrderNo(orderNo);
+    }
+
+    /**
+     * 根据前端传入的 SKU 项构造订单明细并扣减库存。
+     * <p>主商品库存和 SKU 库存同时扣减，保证列表库存、规格库存和订单快照一致。</p>
+     */
+    private OrderItem buildOrderItemFromSku(OrderCreateDTO.OrderSkuItemDTO skuItem) {
+        if (skuItem.getProductId() == null || skuItem.getQuantity() == null || skuItem.getQuantity() <= 0) {
+            throw new BusinessException(ResultCode.PARAM_ERROR);
+        }
+        Product product = productService.getById(skuItem.getProductId());
+        ProductSku sku = productSkuService.getById(skuItem.getSkuId());
+        List<ProductSku> enabledSkus = productSkuService.listByProductId(product.getId()).stream()
+                .filter(item -> item.getStatus() != null && item.getStatus() == 1)
+                .collect(java.util.stream.Collectors.toList());
+        if (skuItem.getSkuId() != null && sku == null) {
+            throw new BusinessException("所选商品规格不可用");
+        }
+        if (!enabledSkus.isEmpty() && skuItem.getSkuId() == null) {
+            throw new BusinessException("请选择商品规格后再下单");
+        }
+        BigDecimal price = product.getPrice();
+        String specName = null;
+        String imageUrl = product.getMainImage();
+        if (sku != null) {
+            if (!sku.getProductId().equals(product.getId()) || sku.getStatus() == null || sku.getStatus() != 1) {
+                throw new BusinessException("所选商品规格不可用");
+            }
+            boolean skuStockOk = productSkuService.decreaseStock(sku.getId(), skuItem.getQuantity());
+            if (!skuStockOk) {
+                throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH, "商品规格\"" + sku.getSpecName() + "\"库存不足");
+            }
+            price = sku.getPrice();
+            specName = String.join(" / ",
+                    java.util.stream.Stream.of(sku.getSpecName(), sku.getFlavor(), sku.getPackageSize())
+                            .filter(value -> value != null && !value.isBlank())
+                            .toArray(String[]::new));
+            imageUrl = sku.getImageUrl() != null && !sku.getImageUrl().isBlank() ? sku.getImageUrl() : imageUrl;
+        }
+        boolean productStockOk = productService.decreaseStock(product.getId(), skuItem.getQuantity());
+        if (!productStockOk) {
+            productSkuService.increaseStock(skuItem.getSkuId(), skuItem.getQuantity());
+            throw new BusinessException(ResultCode.STOCK_NOT_ENOUGH, "商品\"" + product.getName() + "\"库存不足");
+        }
+        OrderItem orderItem = new OrderItem();
+        orderItem.setProductId(product.getId());
+        orderItem.setSkuId(skuItem.getSkuId());
+        orderItem.setSkuSpecName(specName);
+        orderItem.setProductName(product.getName());
+        orderItem.setProductImage(imageUrl);
+        orderItem.setPrice(price);
+        orderItem.setQuantity(skuItem.getQuantity());
+        orderItem.setTotalPrice(price.multiply(BigDecimal.valueOf(skuItem.getQuantity())));
+        return orderItem;
     }
 
     @Override

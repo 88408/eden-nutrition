@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.ProductSkuMapper">
+
+    <resultMap id="BaseResultMap" type="eden.pojo.ProductSku">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="spec_name" property="specName"/>
+        <result column="flavor" property="flavor"/>
+        <result column="package_size" property="packageSize"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, product_id, spec_name, flavor, package_size, price, stock, image_url, status, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM product_sku WHERE id = #{id}
+    </select>
+
+    <select id="selectByProductId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM product_sku
+        WHERE product_id = #{productId}
+        ORDER BY id ASC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_sku (product_id, spec_name, flavor, package_size, price, stock, image_url, status, create_time, update_time)
+        VALUES (#{productId}, #{specName}, #{flavor}, #{packageSize}, #{price}, #{stock}, #{imageUrl}, COALESCE(#{status}, 1), NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE product_sku
+        <set>
+            <if test="specName != null">spec_name = #{specName},</if>
+            <if test="flavor != null">flavor = #{flavor},</if>
+            <if test="packageSize != null">package_size = #{packageSize},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByProductId">
+        DELETE FROM product_sku WHERE product_id = #{productId}
+    </delete>
+
+    <update id="decreaseStock">
+        UPDATE product_sku
+        SET stock = stock - #{quantity}, update_time = NOW()
+        WHERE id = #{id} AND status = 1 AND stock >= #{quantity}
+    </update>
+
+    <update id="increaseStock">
+        UPDATE product_sku
+        SET stock = stock + #{quantity}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

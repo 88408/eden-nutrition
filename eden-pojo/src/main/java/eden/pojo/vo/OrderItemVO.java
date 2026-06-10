@@ -15,6 +15,10 @@ public class OrderItemVO implements Serializable {
     private Long orderId;
     private Long productId;
     private String productSkuId;
+    /** 商品 SKU ID，用于历史订单展示具体规格。 */
+    private Long skuId;
+    /** SKU 规格快照。 */
+    private String skuSpecName;
     private String productName;
     private String productPic;
     private BigDecimal productPrice;

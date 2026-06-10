@@ -1,6 +1,7 @@
 package eden.mapper;
 
 import eden.pojo.ProductReview;
+import eden.pojo.vo.ProductReviewVO;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
@@ -21,9 +22,20 @@ public interface ProductReviewMapper {
                                           @Param("offset") int offset, @Param("limit") int limit);
 
     /**
+     * 查询当前用户发表过的评价，并补充商品名称和主图，供“我的评价”页面展示。
+     */
+    List<ProductReviewVO> selectByUserId(@Param("userId") Long userId,
+                                         @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
      * 统计商品评价数
      */
     long countByProductId(@Param("productId") Long productId);
+
+    /**
+     * 统计当前用户评价数量，用于“我的评价”分页。
+     */
+    long countByUserId(@Param("userId") Long userId);
 
     /**
      * 计算商品平均评分

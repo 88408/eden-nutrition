@@ -2,6 +2,8 @@ package eden.web.controller;
 
 import eden.common.result.Result;
 import eden.pojo.dto.LoginDTO;
+import eden.pojo.dto.PasswordResetCodeDTO;
+import eden.pojo.dto.PasswordResetDTO;
 import eden.pojo.dto.RegisterDTO;
 import eden.pojo.vo.LoginVO;
 import eden.pojo.vo.UserVO;
@@ -70,6 +72,22 @@ public class UserController {
                                        @RequestParam String oldPassword,
                                        @RequestParam String newPassword) {
         userService.changePassword(userId, oldPassword, newPassword);
+        return Result.success();
+    }
+
+    @ApiOperation("发送找回密码验证码")
+    @PostMapping("/password/reset-code")
+    public Result<Void> sendPasswordResetCode(@Validated @RequestBody PasswordResetCodeDTO codeDTO) {
+        // 验证码发送前先校验手机号是否属于注册用户，避免无效手机号占用缓存资源。
+        userService.sendPasswordResetCode(codeDTO.getPhone());
+        return Result.success();
+    }
+
+    @ApiOperation("通过验证码重置密码")
+    @PostMapping("/password/reset")
+    public Result<Void> resetPassword(@Validated @RequestBody PasswordResetDTO resetDTO) {
+        // 重置密码接口不依赖登录态，身份凭证来自手机号与一次性验证码。
+        userService.resetPassword(resetDTO);
         return Result.success();
     }
 

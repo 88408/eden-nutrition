@@ -7,7 +7,7 @@ SET NAMES utf8mb4;
 
 -- 插入当前库内已有用户，保留原始 ID，避免订单、地址等初始化数据引用错位。
 INSERT INTO `user` (`id`, `username`, `phone`, `email`, `password`, `nickname`, `avatar`, `gender`, `points`, `status`, `role`, `create_time`, `update_time`) VALUES
-(1, 'admin', '13800000000', NULL, '$2a$12$wNrp/fy0eW5019GNLAJ1cOg9Id0dZLsLsfeFeA2h1BSAuIdyoXh7m', '管理员', NULL, 0, 0, 1, 'ADMIN', '2026-03-18 08:32:59', '2026-05-03 03:36:24'),
+#(1, 'admin', '13800000000', NULL, '$2a$12$wNrp/fy0eW5019GNLAJ1cOg9Id0dZLsLsfeFeA2h1BSAuIdyoXh7m', '管理员', NULL, 0, 0, 1, 'ADMIN', '2026-03-18 08:32:59', '2026-05-03 03:36:24'),
 (3, 'kang', '13900000000', NULL, '$2a$12$GYHrHUzVVvR9sTQ14hyuQ.VGYjITLDyJaDIv4iXKlBzcti6jJwPWu', '康', NULL, 0, 0, 1, 'ADMIN', '2026-05-03 03:33:50', '2026-05-03 12:28:56'),
 (4, 'yu', '14000000000', NULL, '$2a$12$GYHrHUzVVvR9sTQ14hyuQ.VGYjITLDyJaDIv4iXKlBzcti6jJwPWu', '宇', NULL, 0, 4804, 1, 'USER', '2026-05-03 12:40:24', '2026-05-31 22:12:14');
 

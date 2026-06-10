@@ -1,0 +1,1088 @@
+================================================================================
+EDEN NUTRITION E-COMMERCE PLATFORM - API DOCUMENTATION
+伊甸滋补线上商店 - API 接口文档
+================================================================================
+Version: 1.0.0
+Generated: 2026-04-28
+API Base Path: /api
+
+================================================================================
+通用说明
+================================================================================
+
+Content-Type: application/json
+Character Encoding: UTF-8
+DateTime Format: yyyy-MM-dd HH:mm:ss
+Time Zone: Asia/Shanghai
+
+认证方式:
+- 需要登录的接口需在请求头中携带 Token
+- Header 格式: Authorization: Bearer <token>
+
+所有接口统一返回格式:
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {}
+}
+
+状态码说明:
+- 200: 操作成功
+- 400: 请求参数错误
+- 401: 未登录或Token过期
+- 403: 无权限访问
+- 404: 资源不存在
+- 500: 服务器内部错误
+- 1001: 用户不存在
+- 1002: 密码错误
+- 1003: 用户已存在
+- 1004: 手机号已注册
+- 2001: 商品不存在
+- 2002: 库存不足
+- 3001: 订单不存在
+- 3002: 订单状态异常
+- 4001: 优惠券不存在
+- 4002: 优惠券已过期
+- 4003: 优惠券已领完
+- 5001: 秒杀未开始
+- 5002: 秒杀已结束
+- 5003: 已参与过秒杀
+
+================================================================================
+USER MODULE - 用户管理
+================================================================================
+
+1. 用户注册
+   POST /user/register
+   
+   需要登录: 否
+   
+   请求参数:
+   {
+     "username": "string (4-20位字母数字)",
+     "password": "string (6-20位)",
+     "phone": "string (可选)",
+     "verifyCode": "string (可选)"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "注册成功",
+     "data": null
+   }
+
+2. 用户登录
+   POST /user/login
+   
+   需要登录: 否
+   
+   请求参数:
+   {
+     "username": "string",
+     "password": "string"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "登录成功",
+     "data": {
+       "userId": 10001,
+       "username": "zhangsan",
+       "nickname": "张三",
+       "avatar": "https://cdn.example.com/avatar/default.png",
+       "role": "USER",
+       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+       "createTime": "2024-01-01 10:00:00"
+     }
+   }
+
+3. 获取当前用户信息
+   GET /user/info
+   
+   需要登录: 是
+   
+   请求参数: 无
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "id": 10001,
+       "username": "zhangsan",
+       "nickname": "张三",
+       "phone": "138****8000",
+       "email": "zhangsan@example.com",
+       "avatar": "https://cdn.example.com/avatar/default.png",
+       "gender": 1,
+       "points": 1000,
+       "status": 1,
+       "role": "USER",
+       "createTime": "2024-01-01 10:00:00"
+     }
+   }
+
+4. 修改用户信息
+   PUT /user/info
+   
+   需要登录: 是
+   
+   请求参数:
+   {
+     "nickname": "string (可选)",
+     "avatar": "string (可选)",
+     "gender": "integer 0|1|2 (可选)",
+     "email": "string (可选)"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "修改成功",
+     "data": null
+   }
+
+5. 修改密码
+   PUT /user/password
+   
+   需要登录: 是
+   
+   请求参数:
+   {
+     "oldPassword": "string",
+     "newPassword": "string"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "密码修改成功",
+     "data": null
+   }
+
+6. 用户登出
+   POST /user/logout
+   
+   需要登录: 是
+   
+   请求参数: 无
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "登出成功",
+     "data": null
+   }
+
+================================================================================
+PRODUCT MODULE - 商品管理
+================================================================================
+
+1. 商品列表查询
+   GET /product/list
+   
+   需要登录: 否
+   
+   查询参数:
+   - keyword: string (可选) - 搜索关键词
+   - categoryId: number (可选) - 分类ID
+   - minPrice: decimal (可选) - 最低价格
+   - maxPrice: decimal (可选) - 最高价格
+   - sortBy: string (可选) - 排序字段(price/sales/createTime)
+   - sortOrder: string (可选) - 排序方向(asc/desc)
+   - pageNum: integer (可选) - 页码，默认1
+   - pageSize: integer (可选) - 每页数量，默认10
+   
+   URL示例:
+   GET /product/list?keyword=燕窝&categoryId=1&minPrice=100&maxPrice=1000&sortBy=sales&sortOrder=desc&pageNum=1&pageSize=10
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 100,
+       "pages": 10,
+       "pageNum": 1,
+       "pageSize": 10,
+       "list": [
+         {
+           "id": 1001,
+           "name": "印尼进口燕窝 100g",
+           "categoryId": 1,
+           "categoryName": "燕窝",
+           "price": 599.00,
+           "originalPrice": 799.00,
+           "mainImage": "https://cdn.example.com/product/yanwo1.jpg",
+           "sales": 1234,
+           "stock": 500,
+           "status": 1,
+           "isHot": 1,
+           "isNew": 0
+         }
+       ]
+     }
+   }
+
+2. 商品详情
+   GET /product/{id}
+   
+   需要登录: 否
+   
+   路径参数:
+   - id: number - 商品ID
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "id": 1001,
+       "name": "印尼进口燕窝 100g",
+       "categoryId": 1,
+       "categoryName": "燕窝",
+       "price": 599.00,
+       "originalPrice": 799.00,
+       "mainImage": "https://cdn.example.com/product/yanwo1.jpg",
+       "images": [
+         "https://cdn.example.com/product/yanwo1.jpg",
+         "https://cdn.example.com/product/yanwo2.jpg"
+       ],
+       "detail": "<p>商品详情HTML内容</p>",
+       "specs": "净含量: 100g; 产地: 印尼",
+       "sales": 1234,
+       "stock": 500,
+       "status": 1,
+       "rating": 4.8,
+       "reviewCount": 256,
+       "createTime": "2024-01-01 10:00:00"
+     }
+   }
+
+3. 热销商品
+   GET /product/hot
+   
+   需要登录: 否
+   
+   查询参数:
+   - limit: integer (可选) - 数量限制，默认10
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": [
+       {
+         "id": 1001,
+         "name": "印尼进口燕窝 100g",
+         "price": 599.00,
+         "mainImage": "https://cdn.example.com/product/yanwo1.jpg",
+         "sales": 1234
+       }
+     ]
+   }
+
+4. 新品推荐
+   GET /product/new
+   
+   需要登录: 否
+   
+   查询参数:
+   - limit: integer (可选) - 数量限制，默认10
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": [
+       {
+         "id": 1005,
+         "name": "长白山野生人参 50g",
+         "price": 899.00,
+         "mainImage": "https://cdn.example.com/product/renshen1.jpg",
+         "createTime": "2024-12-01 10:00:00"
+       }
+     ]
+   }
+
+================================================================================
+CATEGORY MODULE - 分类管理
+================================================================================
+
+1. 获取分类树
+   GET /category/tree
+   
+   需要登录: 否
+   
+   请求参数: 无
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": [
+       {
+         "id": 1,
+         "name": "燕窝",
+         "icon": "https://cdn.example.com/icon/yanwo.png",
+         "sort": 1,
+         "children": [
+           {
+             "id": 11,
+             "name": "即食燕窝",
+             "icon": null,
+             "sort": 1,
+             "children": []
+           },
+           {
+             "id": 12,
+             "name": "干燕窝",
+             "icon": null,
+             "sort": 2,
+             "children": []
+           }
+         ]
+       },
+       {
+         "id": 2,
+         "name": "人参",
+         "icon": "https://cdn.example.com/icon/renshen.png",
+         "sort": 2,
+         "children": []
+       }
+     ]
+   }
+
+================================================================================
+ORDER MODULE - 订单管理
+================================================================================
+
+1. 创建订单
+   POST /order/create
+   
+   需要登录: 是
+   
+   请求参数:
+   {
+     "items": [
+       {
+         "productId": 1001,
+         "quantity": 2,
+         "price": 599.00
+       }
+     ],
+     "receiverName": "张三",
+     "receiverPhone": "13800138000",
+     "receiverAddress": "浙江省杭州市西湖区",
+     "couponId": 101,  // 可选，使用的优惠券ID
+     "remark": "请轻放"  // 可选
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "订单创建成功",
+     "data": {
+       "orderId": 5001,
+       "orderNo": "202412280001",
+       "totalAmount": 1198.00,
+       "discountAmount": 100.00,
+       "payAmount": 1098.00,
+       "status": 0,
+       "createTime": "2024-12-28 10:00:00"
+     }
+   }
+
+2. 订单列表
+   GET /order/list
+   
+   需要登录: 是
+   
+   查询参数:
+   - status: integer (可选) - 订单状态 0-5
+   - pageNum: integer (可选) - 页码
+   - pageSize: integer (可选) - 每页数量
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 10,
+       "pages": 1,
+       "pageNum": 1,
+       "pageSize": 10,
+       "list": [
+         {
+           "id": 5001,
+           "orderNo": "202412280001",
+           "totalAmount": 1198.00,
+           "payAmount": 1098.00,
+           "status": 1,
+           "statusName": "已支付",
+           "receiverName": "张三",
+           "receiverPhone": "13800138000",
+           "createTime": "2024-12-28 10:00:00",
+           "payTime": "2024-12-28 10:05:00"
+         }
+       ]
+     }
+   }
+
+3. 订单详情
+   GET /order/{id}
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 订单ID
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "id": 5001,
+       "orderNo": "202412280001",
+       "userId": 10001,
+       "totalAmount": 1198.00,
+       "discountAmount": 100.00,
+       "payAmount": 1098.00,
+       "status": 1,
+       "statusName": "已支付",
+       "receiverName": "张三",
+       "receiverPhone": "13800138000",
+       "receiverAddress": "浙江省杭州市西湖区",
+       "deliveryCompany": "圆通快递",
+       "deliverySn": "123456789",
+       "items": [
+         {
+           "id": 1,
+           "productId": 1001,
+           "productName": "印尼进口燕窝 100g",
+           "price": 599.00,
+           "quantity": 2,
+           "totalPrice": 1198.00
+         }
+       ],
+       "createTime": "2024-12-28 10:00:00",
+       "payTime": "2024-12-28 10:05:00",
+       "shipTime": "2024-12-28 14:00:00"
+     }
+   }
+
+4. 取消订单
+   POST /order/{id}/cancel
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 订单ID
+   
+   请求参数:
+   {
+     "reason": "string (可选)"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "订单已取消",
+     "data": null
+   }
+
+5. 支付订单
+   POST /order/{id}/pay
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 订单ID
+   
+   请求参数:
+   {
+     "payType": 1,  // 1-支付宝 2-微信
+     "amount": 1098.00
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "支付成功",
+     "data": {
+       "orderId": 5001,
+       "status": 1,
+       "payTime": "2024-12-28 10:05:00"
+     }
+   }
+
+================================================================================
+COUPON MODULE - 优惠券管理
+================================================================================
+
+1. 获取可用优惠券列表
+   GET /coupon/list
+   
+   需要登录: 否
+   
+   查询参数:
+   - pageNum: integer (可选)
+   - pageSize: integer (可选)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 5,
+       "list": [
+         {
+           "id": 101,
+           "name": "满200减50",
+           "type": 1,
+           "typeName": "满减券",
+           "value": 50.00,
+           "minAmount": 200.00,
+           "remainCount": 100,
+           "startTime": "2024-12-01 00:00:00",
+           "endTime": "2024-12-31 23:59:59"
+         }
+       ]
+     }
+   }
+
+2. 领取优惠券
+   POST /coupon/{id}/receive
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 优惠券ID
+   
+   请求参数: 无
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "领取成功",
+     "data": null
+   }
+
+3. 获取用户优惠券
+   GET /user/coupons
+   
+   需要登录: 是
+   
+   查询参数:
+   - status: integer (可选) - 0-未使用 1-已使用 2-已过期
+   - pageNum: integer (可选)
+   - pageSize: integer (可选)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 3,
+       "list": [
+         {
+           "id": 1,
+           "couponId": 101,
+           "couponName": "满200减50",
+           "type": 1,
+           "value": 50.00,
+           "status": 0,
+           "statusName": "未使用",
+           "startTime": "2024-12-01 00:00:00",
+           "endTime": "2024-12-31 23:59:59",
+           "receiveTime": "2024-12-15 10:00:00"
+         }
+       ]
+     }
+   }
+
+================================================================================
+SECKILL MODULE - 秒杀管理
+================================================================================
+
+1. 获取秒杀列表
+   GET /seckill/list
+   
+   需要登录: 否
+   
+   查询参数:
+   - status: integer (可选) - 0-未开始 1-进行中 2-已结束
+   - pageNum: integer (可选)
+   - pageSize: integer (可选)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 10,
+       "list": [
+         {
+           "id": 1,
+           "productId": 1001,
+           "productName": "印尼进口燕窝 100g",
+           "mainImage": "https://cdn.example.com/product/yanwo1.jpg",
+           "originalPrice": 599.00,
+           "seckillPrice": 399.00,
+           "stock": 100,
+           "limitPerUser": 2,
+           "startTime": "2024-12-25 10:00:00",
+           "endTime": "2024-12-25 11:00:00",
+           "status": 1,
+           "statusName": "进行中"
+         }
+       ]
+     }
+   }
+
+2. 获取秒杀详情
+   GET /seckill/{id}
+   
+   需要登录: 否
+   
+   路径参数:
+   - id: number - 秒杀ID
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "id": 1,
+       "productId": 1001,
+       "productName": "印尼进口燕窝 100g",
+       "mainImage": "https://cdn.example.com/product/yanwo1.jpg",
+       "originalPrice": 599.00,
+       "seckillPrice": 399.00,
+       "stock": 100,
+       "limitPerUser": 2,
+       "startTime": "2024-12-25 10:00:00",
+       "endTime": "2024-12-25 11:00:00",
+       "status": 1,
+       "productDetail": "<p>商品详情</p>"
+     }
+   }
+
+3. 参与秒杀
+   POST /seckill/{id}/participate
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 秒杀ID
+   
+   请求参数:
+   {
+     "quantity": 1  // 购买数量，不超过 limitPerUser
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "秒杀成功",
+     "data": {
+       "orderId": 5001,
+       "orderNo": "202412250001",
+       "totalAmount": 399.00,
+       "createTime": "2024-12-25 10:00:01"
+     }
+   }
+
+================================================================================
+ADDRESS MODULE - 收货地址管理
+================================================================================
+
+1. 获取地址列表
+   GET /address/list
+   
+   需要登录: 是
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": [
+       {
+         "id": 101,
+         "userId": 10001,
+         "receiverName": "张三",
+         "receiverPhone": "13800138000",
+         "province": "浙江省",
+         "city": "杭州市",
+         "district": "西湖区",
+         "detailAddress": "某街道123号",
+         "isDefault": 1,
+         "createTime": "2024-01-01 10:00:00"
+       }
+     ]
+   }
+
+2. 添加收货地址
+   POST /address/add
+   
+   需要登录: 是
+   
+   请求参数:
+   {
+     "receiverName": "string",
+     "receiverPhone": "string",
+     "province": "string",
+     "city": "string",
+     "district": "string",
+     "detailAddress": "string",
+     "isDefault": 0|1
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "添加成功",
+     "data": {
+       "id": 101
+     }
+   }
+
+3. 修改收货地址
+   PUT /address/{id}
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 地址ID
+   
+   请求参数:
+   {
+     "receiverName": "string (可选)",
+     "receiverPhone": "string (可选)",
+     "province": "string (可选)",
+     "city": "string (可选)",
+     "district": "string (可选)",
+     "detailAddress": "string (可选)",
+     "isDefault": 0|1 (可选)
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "修改成功",
+     "data": null
+   }
+
+4. 删除收货地址
+   DELETE /address/{id}
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 地址ID
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "删除成功",
+     "data": null
+   }
+
+5. 设置默认地址
+   POST /address/{id}/set-default
+   
+   需要登录: 是
+   
+   路径参数:
+   - id: number - 地址ID
+   
+   请求参数: 无
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "设置成功",
+     "data": null
+   }
+
+================================================================================
+REVIEW MODULE - 商品评价管理
+================================================================================
+
+1. 获取商品评价列表
+   GET /review/product/{productId}
+   
+   需要登录: 否
+   
+   路径参数:
+   - productId: number - 商品ID
+   
+   查询参数:
+   - rating: integer (可选) - 评分筛选 1-5
+   - pageNum: integer (可选)
+   - pageSize: integer (可选)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 256,
+       "pageNum": 1,
+       "pageSize": 10,
+       "list": [
+         {
+           "id": 1,
+           "userId": 10001,
+           "userName": "用户昵称",
+           "rating": 5,
+           "content": "商品非常好用，强烈推荐！",
+           "images": [
+             "https://cdn.example.com/review/1.jpg"
+           ],
+           "isAnonymous": 0,
+           "status": 1,
+           "createTime": "2024-12-20 10:00:00"
+         }
+       ]
+     }
+   }
+
+2. 添加商品评价
+   POST /review/add
+   
+   需要登录: 是
+   
+   请求参数:
+   {
+     "productId": 1001,
+     "orderId": 5001,
+     "rating": 5,
+     "content": "商品非常好",
+     "images": [
+       "https://cdn.example.com/review/1.jpg"
+     ],
+     "isAnonymous": 0
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "评价成功",
+     "data": {
+       "id": 1,
+       "createTime": "2024-12-28 10:00:00"
+     }
+   }
+
+================================================================================
+ADMIN ONLY - 管理端专用接口
+================================================================================
+
+以下接口仅管理员可访问 (需 role='ADMIN')
+
+1. 用户管理 - 获取用户列表
+   GET /admin/user/list
+   
+   需要登录: 是 (需管理员权限)
+   
+   查询参数:
+   - username: string (可选)
+   - phone: string (可选)
+   - status: integer (可选) - 0|1
+   - pageNum: integer (可选)
+   - pageSize: integer (可选)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": {
+       "total": 1000,
+       "list": [
+         {
+           "id": 10001,
+           "username": "zhangsan",
+           "phone": "13800138000",
+           "nickname": "张三",
+           "points": 1000,
+           "status": 1,
+           "role": "USER",
+           "createTime": "2024-01-01 10:00:00"
+         }
+       ]
+     }
+   }
+
+2. 商品管理 - 创建商品
+   POST /admin/product/create
+   
+   需要登录: 是 (需管理员权限)
+   
+   请求参数:
+   {
+     "name": "string",
+     "categoryId": number,
+     "price": decimal,
+     "stock": integer,
+     "detail": "string",
+     "mainImage": "string",
+     "subImages": ["string"],
+     "isHot": 0|1,
+     "isNew": 0|1
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "创建成功",
+     "data": {
+       "id": 1001
+     }
+   }
+
+3. 商品管理 - 更新商品
+   PUT /admin/product/{id}
+   
+   需要登录: 是 (需管理员权限)
+   
+   路径参数:
+   - id: number - 商品ID
+   
+   请求参数: (同创建商品)
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "更新成功",
+     "data": null
+   }
+
+4. 商品管理 - 上下架商品
+   PUT /admin/product/{id}/status
+   
+   需要登录: 是 (需管理员权限)
+   
+   路径参数:
+   - id: number - 商品ID
+   
+   请求参数:
+   {
+     "status": 0|1  // 0-下架 1-上架
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "操作成功",
+     "data": null
+   }
+
+5. 订单管理 - 发货
+   POST /admin/order/{id}/ship
+   
+   需要登录: 是 (需管理员权限)
+   
+   路径参数:
+   - id: number - 订单ID
+   
+   请求参数:
+   {
+     "deliveryCompany": "string",
+     "deliverySn": "string"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "发货成功",
+     "data": null
+   }
+
+6. 优惠券管理 - 创建优惠券
+   POST /admin/coupon/create
+   
+   需要登录: 是 (需管理员权限)
+   
+   请求参数:
+   {
+     "name": "string",
+     "type": 1|2,
+     "value": decimal,
+     "minAmount": decimal,
+     "totalCount": integer,
+     "startTime": "datetime",
+     "endTime": "datetime"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "创建成功",
+     "data": {
+       "id": 101
+     }
+   }
+
+7. 秒杀管理 - 创建秒杀
+   POST /admin/seckill/create
+   
+   需要登录: 是 (需管理员权限)
+   
+   请求参数:
+   {
+     "productId": number,
+     "seckillPrice": decimal,
+     "stock": integer,
+     "limitPerUser": integer,
+     "startTime": "datetime",
+     "endTime": "datetime"
+   }
+   
+   响应示例:
+   {
+     "code": 200,
+     "message": "创建成功",
+     "data": {
+       "id": 1
+     }
+   }
+
+================================================================================
+API 调用示例（cURL）
+================================================================================
+
+1. 用户登录:
+curl -X POST http://localhost:8080/api/user/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "zhangsan",
+    "password": "123456"
+  }'
+
+2. 获取商品列表:
+curl -X GET "http://localhost:8080/api/product/list?keyword=燕窝&pageNum=1&pageSize=10" \
+  -H "Content-Type: application/json"
+
+3. 创建订单(需登录):
+curl -X POST http://localhost:8080/api/order/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "items": [
+      {
+        "productId": 1001,
+        "quantity": 2,
+        "price": 599.00
+      }
+    ],
+    "receiverName": "张三",
+    "receiverPhone": "13800138000",
+    "receiverAddress": "浙江省杭州市西湖区"
+  }'
+
+================================================================================
+END OF DOCUMENT
+================================================================================

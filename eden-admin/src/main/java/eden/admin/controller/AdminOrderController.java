@@ -1,6 +1,7 @@
 package eden.admin.controller;
 
 import eden.admin.annotation.RequireAdminLogin;
+import eden.admin.annotation.RequirePermission;
 import eden.common.result.Result;
 import eden.pojo.dto.AdminOrderQueryDTO;
 import eden.pojo.dto.OrderDeliverDTO;
@@ -27,6 +28,7 @@ public class AdminOrderController {
 
     @GetMapping("/list")
     @Operation(summary = "分页查询订单")
+    @RequirePermission("order:view")
     public Result<PageVO<OrderAdminVO>> list(AdminOrderQueryDTO queryDTO) {
         PageVO<OrderAdminVO> pageInfo = orderService.getAdminOrderPage(queryDTO);
         return Result.success(pageInfo);
@@ -34,6 +36,7 @@ public class AdminOrderController {
 
     @GetMapping("/{orderId}")
     @Operation(summary = "获取订单详情")
+    @RequirePermission("order:view")
     public Result<OrderDetailAdminVO> detail(@PathVariable("orderId") Long orderId) {
         OrderDetailAdminVO detail = orderService.getAdminOrderDetail(orderId);
         return Result.success(detail);
@@ -41,6 +44,7 @@ public class AdminOrderController {
 
     @PostMapping("/deliver")
     @Operation(summary = "订单发货")
+    @RequirePermission("order:deliver")
     public Result<Void> deliver(@RequestBody OrderDeliverDTO deliverDTO) {
         orderService.deliverOrder(deliverDTO);
         return Result.success(null);

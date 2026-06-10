@@ -2,6 +2,7 @@ package eden.service;
 
 import eden.pojo.Order;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -48,4 +49,10 @@ public interface AlipayService {
      * 根据支付宝同步返回参数构造前端订单详情页地址。
      */
     String buildReturnRedirectUrl(String orderNo);
+
+    /**
+     * 发起支付宝沙箱退款，返回支付宝退款请求号。
+     * <p>售后服务会在真实退款失败时降级为模拟退款，并保留审计流水。</p>
+     */
+    String refund(Order order, BigDecimal refundAmount);
 }

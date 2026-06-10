@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 public class CartItemVO {
 
     private Long productId;
+    private Long skuId;
+    private String skuSpecName;
     private String productName;
     private String productImage;
     private BigDecimal price;

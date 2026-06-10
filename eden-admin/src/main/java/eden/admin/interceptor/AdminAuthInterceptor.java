@@ -1,10 +1,12 @@
 package eden.admin.interceptor;
 
 import eden.admin.annotation.RequireAdminLogin;
+import eden.admin.annotation.RequirePermission;
 import eden.common.constant.RedisConstants;
 import eden.common.exception.BusinessException;
 import eden.common.result.ResultCode;
 import eden.common.utils.JwtUtils;
+import eden.service.RbacService;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private RbacService rbacService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -56,26 +61,33 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
             throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
 
+        Long userId;
         try {
-            // 解析 token
             Claims claims = jwtUtils.parseToken(token);
-            if (claims == null) {
+            userId = jwtUtils.getUserId(token);
+            if (claims == null || userId == null) {
                 throw new BusinessException(ResultCode.UNAUTHORIZED);
             }
-
-            Long userId = jwtUtils.getUserId(token);
-            
-            // 验证 token 是否在 redis 中存在，防止已退出登录的 token 继续使用
-            String cacheToken = stringRedisTemplate.opsForValue().get(RedisConstants.USER_TOKEN + userId);
-            if (!token.equals(cacheToken)) {
-                throw new BusinessException(ResultCode.UNAUTHORIZED);
-            }
-
-            // 将用户ID存入request
-            request.setAttribute("adminId", userId);
-            return true;
         } catch (Exception e) {
             throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
+
+        // 验证 token 是否在 redis 中存在，防止已退出登录的 token 继续使用
+        String cacheToken = stringRedisTemplate.opsForValue().get(RedisConstants.USER_TOKEN + userId);
+        if (!token.equals(cacheToken)) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        // 将用户ID存入request，Controller 可继续读取当前管理员身份。
+        request.setAttribute("adminId", userId);
+
+        RequirePermission permission = handlerMethod.getMethodAnnotation(RequirePermission.class);
+        if (permission == null) {
+            permission = handlerMethod.getBeanType().getAnnotation(RequirePermission.class);
+        }
+        if (permission != null && !rbacService.getPermissionCodes(userId).contains(permission.value())) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+        return true;
     }
 }

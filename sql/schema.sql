@@ -154,6 +154,8 @@ CREATE TABLE `order_item` (
     `order_id` BIGINT NOT NULL COMMENT '订单ID',
     `order_no` VARCHAR(50) NOT NULL COMMENT '订单编号',
     `product_id` BIGINT NOT NULL COMMENT '商品ID',
+    `sku_id` BIGINT DEFAULT NULL COMMENT '商品SKU ID',
+    `sku_spec_name` VARCHAR(120) DEFAULT NULL COMMENT 'SKU规格快照',
     `product_name` VARCHAR(200) NOT NULL COMMENT '商品名称（快照）',
     `product_image` VARCHAR(500) COMMENT '商品图片（快照）',
     `price` DECIMAL(10, 2) NOT NULL COMMENT '商品单价（快照）',
@@ -161,7 +163,8 @@ CREATE TABLE `order_item` (
     `total_price` DECIMAL(10, 2) NOT NULL COMMENT '小计金额',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_order_id` (`order_id`),
-    INDEX `idx_product_id` (`product_id`)
+    INDEX `idx_product_id` (`product_id`),
+    INDEX `idx_sku_id` (`sku_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细表';
 
 -- ============================================
@@ -266,6 +269,50 @@ CREATE TABLE `operation_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
 
 -- ============================================
+-- ============================================
+-- 5. 用户体验扩展模块
+-- ============================================
+
+-- 客服会话表
+DROP TABLE IF EXISTS `support_message`;
+DROP TABLE IF EXISTS `support_session`;
+CREATE TABLE `support_session` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '客服会话ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `product_id` BIGINT DEFAULT NULL COMMENT '来源商品ID',
+    `status` TINYINT DEFAULT 1 COMMENT '状态：0-关闭 1-进行中',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_user_product` (`user_id`, `product_id`),
+    INDEX `idx_update_time` (`update_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客服会话表';
+
+-- 客服消息表
+CREATE TABLE `support_message` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '客服消息ID',
+    `session_id` BIGINT NOT NULL COMMENT '客服会话ID',
+    `sender_type` VARCHAR(20) NOT NULL COMMENT '发送方：USER/STAFF/SYSTEM',
+    `content` VARCHAR(1000) NOT NULL COMMENT '消息内容',
+    `is_read` TINYINT DEFAULT 0 COMMENT '是否已读：0-未读 1-已读',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX `idx_session_time` (`session_id`, `create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客服消息表';
+
+-- 站内通知表
+DROP TABLE IF EXISTS `notice`;
+CREATE TABLE `notice` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '通知ID',
+    `user_id` BIGINT NOT NULL COMMENT '接收用户ID',
+    `type` VARCHAR(20) NOT NULL COMMENT '类型：ORDER/COUPON/SYSTEM',
+    `title` VARCHAR(100) NOT NULL COMMENT '通知标题',
+    `content` VARCHAR(500) NOT NULL COMMENT '通知内容',
+    `target` VARCHAR(255) DEFAULT NULL COMMENT '业务跳转目标',
+    `is_read` TINYINT DEFAULT 0 COMMENT '是否已读：0-未读 1-已读',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `read_time` DATETIME DEFAULT NULL COMMENT '已读时间',
+    INDEX `idx_user_read_time` (`user_id`, `is_read`, `create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内通知表';
+
 -- 初始化数据
 -- ============================================
 
@@ -442,3 +489,84 @@ JOIN `product` p ON p.id = t.product_id;
 
 DROP TEMPORARY TABLE IF EXISTS `tmp_seed_order`;
 
+-- ============================================
+-- 满分迭代扩展结构：RBAC、SKU、退款售后
+-- 如使用分文件初始化，也可执行 10-full-score-iteration.sql
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS `product_sku` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'SKU ID',
+    `product_id` BIGINT NOT NULL COMMENT '商品ID',
+    `spec_name` VARCHAR(80) NOT NULL COMMENT '规格名称',
+    `flavor` VARCHAR(80) DEFAULT NULL COMMENT '口味',
+    `package_size` VARCHAR(80) DEFAULT NULL COMMENT '包装/净含量',
+    `price` DECIMAL(10, 2) NOT NULL COMMENT 'SKU售价',
+    `stock` INT NOT NULL DEFAULT 0 COMMENT 'SKU库存',
+    `image_url` VARCHAR(500) DEFAULT NULL COMMENT 'SKU图片',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用 1-启用',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品规格SKU表';
+
+CREATE TABLE IF NOT EXISTS `permission` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '权限ID',
+    `parent_id` BIGINT NOT NULL DEFAULT 0 COMMENT '父权限ID',
+    `name` VARCHAR(80) NOT NULL COMMENT '权限/菜单名称',
+    `code` VARCHAR(80) NOT NULL COMMENT '权限码',
+    `path` VARCHAR(160) DEFAULT NULL COMMENT '前端路由',
+    `component` VARCHAR(160) DEFAULT NULL COMMENT '前端组件',
+    `icon` VARCHAR(80) DEFAULT NULL COMMENT '菜单图标',
+    `type` TINYINT NOT NULL COMMENT '1-菜单 2-按钮/接口',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用 1-启用',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_permission_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台权限表';
+
+CREATE TABLE IF NOT EXISTS `role` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID',
+    `name` VARCHAR(80) NOT NULL COMMENT '角色名称',
+    `code` VARCHAR(80) NOT NULL COMMENT '角色编码',
+    `description` VARCHAR(255) DEFAULT NULL COMMENT '角色说明',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用 1-启用',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_role_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台角色表';
+
+CREATE TABLE IF NOT EXISTS `role_permission` (
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    `permission_id` BIGINT NOT NULL COMMENT '权限ID',
+    PRIMARY KEY (`role_id`, `permission_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色权限关联表';
+
+CREATE TABLE IF NOT EXISTS `user_role` (
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (`user_id`, `role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
+
+CREATE TABLE IF NOT EXISTS `refund_apply` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '退款申请ID',
+    `refund_no` VARCHAR(64) NOT NULL COMMENT '退款申请号',
+    `order_id` BIGINT NOT NULL COMMENT '订单ID',
+    `order_no` VARCHAR(64) NOT NULL COMMENT '订单号',
+    `order_item_id` BIGINT DEFAULT NULL COMMENT '订单项ID，空表示整单退款',
+    `user_id` BIGINT NOT NULL COMMENT '申请用户ID',
+    `refund_amount` DECIMAL(10, 2) NOT NULL COMMENT '退款金额',
+    `original_order_status` TINYINT DEFAULT NULL COMMENT '申请退款前订单状态',
+    `reason` VARCHAR(500) NOT NULL COMMENT '退款原因',
+    `images` TEXT DEFAULT NULL COMMENT '凭证图片JSON',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0待审核 1审核通过 2审核拒绝 3退款成功 4退款失败',
+    `audit_remark` VARCHAR(500) DEFAULT NULL COMMENT '审核备注',
+    `auditor_id` BIGINT DEFAULT NULL COMMENT '审核管理员ID',
+    `audit_time` DATETIME DEFAULT NULL COMMENT '审核时间',
+    `refund_trade_no` VARCHAR(100) DEFAULT NULL COMMENT '第三方退款号或模拟流水',
+    `simulated` TINYINT NOT NULL DEFAULT 0 COMMENT '是否模拟退款：0否 1是',
+    `refund_time` DATETIME DEFAULT NULL COMMENT '退款完成时间',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_refund_no` (`refund_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='售后退款申请表';

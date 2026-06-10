@@ -39,6 +39,33 @@
         WHERE product_id = #{productId} AND status = 1
     </select>
 
+    <select id="selectByUserId" resultType="eden.pojo.vo.ProductReviewVO">
+        SELECT
+            r.id,
+            r.product_id AS productId,
+            r.user_id AS userId,
+            r.order_id AS orderId,
+            r.rating,
+            r.content,
+            r.images,
+            r.is_anonymous AS isAnonymous,
+            r.status,
+            r.create_time AS createTime,
+            p.name AS productName,
+            p.main_image AS productImage
+        FROM product_review r
+        LEFT JOIN product p ON p.id = r.product_id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM product_review
+        WHERE user_id = #{userId}
+    </select>
+
     <select id="avgRatingByProductId" resultType="java.lang.Double">
         SELECT AVG(rating)
         FROM product_review

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eden.mapper.ReportMapper">
+
+    <select id="selectSalesByCategory" resultType="eden.pojo.vo.ReportMetricVO">
+        SELECT
+            c.id AS categoryId,
+            c.name AS label,
+            COALESCE(SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN oi.total_price ELSE 0 END), 0) AS salesAmount,
+            COUNT(DISTINCT CASE WHEN o.status IN (1, 2, 3, 4) THEN o.id END) AS orderCount,
+            COALESCE(SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN oi.quantity ELSE 0 END), 0) AS quantity,
+            COALESCE(SUM(CASE WHEN o.status = 7 THEN oi.total_price ELSE 0 END), 0) AS refundAmount,
+            COALESCE(AVG(CASE WHEN o.status IN (1, 2, 3, 4) THEN o.pay_amount END), 0) AS averageOrderAmount
+        FROM category c
+        LEFT JOIN product p ON p.category_id = c.id
+        LEFT JOIN order_item oi ON oi.product_id = p.id
+        LEFT JOIN `order` o ON o.id = oi.order_id AND o.status IN (1, 2, 3, 4, 7)
+        <where>
+            <if test="categoryId != null">AND c.id = #{categoryId}</if>
+            <if test="startTime != null and startTime != ''">AND o.create_time &gt;= #{startTime}</if>
+            <if test="endTime != null and endTime != ''">AND o.create_time &lt;= #{endTime}</if>
+        </where>
+        GROUP BY c.id, c.name
+        ORDER BY salesAmount DESC
+    </select>
+
+    <select id="selectSalesTrend" resultType="eden.pojo.vo.ReportMetricVO">
+        SELECT
+            <choose>
+                <when test="grain == 'month'">DATE_FORMAT(o.create_time, '%Y-%m')</when>
+                <otherwise>DATE_FORMAT(o.create_time, '%Y-%m-%d')</otherwise>
+            </choose> AS label,
+            COALESCE(SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN o.pay_amount ELSE 0 END), 0) AS salesAmount,
+            SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN 1 ELSE 0 END) AS orderCount,
+            COALESCE(SUM(CASE WHEN o.status = 7 THEN o.pay_amount ELSE 0 END), 0) AS refundAmount,
+            COALESCE(AVG(CASE WHEN o.status IN (1, 2, 3, 4) THEN o.pay_amount END), 0) AS averageOrderAmount
+        FROM `order` o
+        WHERE o.status IN (1, 2, 3, 4, 7)
+        <if test="startTime != null and startTime != ''">AND o.create_time &gt;= #{startTime}</if>
+        <if test="endTime != null and endTime != ''">AND o.create_time &lt;= #{endTime}</if>
+        GROUP BY label
+        ORDER BY label ASC
+    </select>
+
+    <select id="selectOrderTrend" resultType="eden.pojo.vo.ReportMetricVO">
+        SELECT
+            <choose>
+                <when test="grain == 'month'">DATE_FORMAT(o.create_time, '%Y-%m')</when>
+                <otherwise>DATE_FORMAT(o.create_time, '%Y-%m-%d')</otherwise>
+            </choose> AS label,
+            SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN 1 ELSE 0 END) AS orderCount,
+            COALESCE(SUM(CASE WHEN o.status IN (1, 2, 3, 4) THEN o.pay_amount ELSE 0 END), 0) AS salesAmount
+        FROM `order` o
+        WHERE o.status IN (1, 2, 3, 4)
+        <if test="startTime != null and startTime != ''">AND o.create_time &gt;= #{startTime}</if>
+        <if test="endTime != null and endTime != ''">AND o.create_time &lt;= #{endTime}</if>
+        GROUP BY label
+        ORDER BY label ASC
+    </select>
+
+    <select id="selectTopProducts" resultType="eden.pojo.vo.ReportMetricVO">
+        SELECT
+            p.id AS productId,
+            p.name AS label,
+            COALESCE(SUM(oi.total_price), 0) AS salesAmount,
+            COALESCE(SUM(oi.quantity), 0) AS quantity,
+            COUNT(DISTINCT o.id) AS orderCount
+        FROM product p
+        INNER JOIN order_item oi ON oi.product_id = p.id
+        INNER JOIN `order` o ON o.id = oi.order_id AND o.status IN (1, 2, 3, 4)
+        <where>
+            <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
+            <if test="startTime != null and startTime != ''">AND o.create_time &gt;= #{startTime}</if>
+            <if test="endTime != null and endTime != ''">AND o.create_time &lt;= #{endTime}</if>
+        </where>
+        GROUP BY p.id, p.name
+        ORDER BY quantity DESC, salesAmount DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
