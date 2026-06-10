@@ -1,0 +1,14 @@
+2026-06-05 18:11:31.049  INFO 59980 --- [main] eden.EdenApplication                     : Starting EdenApplication using Java 17.0.12 on limz with PID 59980 (D:\project\eden-nutrition\eden-admin\target\classes started by 28391 in D:\project\eden-nutrition\eden-admin)
+2026-06-05 18:11:31.072  INFO 59980 --- [main] eden.EdenApplication                     : The following 1 profile is active: "dev"
+2026-06-05 18:11:32.720  INFO 59980 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-05 18:11:32.725  INFO 59980 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-06-05 18:11:32.767  INFO 59980 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 0 Redis repository interfaces.
+2026-06-05 18:11:34.104  INFO 59980 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-06-05 18:11:34.118  INFO 59980 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-05 18:11:34.118  INFO 59980 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.109]
+2026-06-05 18:11:34.283  INFO 59980 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-06-05 18:11:34.284  INFO 59980 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3149 ms
+2026-06-05 18:11:34.865  INFO 59980 --- [main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-06-05 18:11:34.884  INFO 59980 --- [main] ConditionEvaluationReportLoggingListener : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
