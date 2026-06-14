@@ -12,6 +12,7 @@ import eden.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -45,7 +46,7 @@ public class AdminOrderController {
     @PostMapping("/deliver")
     @Operation(summary = "订单发货")
     @RequirePermission("order:deliver")
-    public Result<Void> deliver(@RequestBody OrderDeliverDTO deliverDTO) {
+    public Result<Void> deliver(@Validated @RequestBody OrderDeliverDTO deliverDTO) {
         orderService.deliverOrder(deliverDTO);
         return Result.success(null);
     }

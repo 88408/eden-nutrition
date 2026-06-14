@@ -4,3 +4,11 @@
 [2026-06-10 13:28:58] 角色权限回显与防误清空修复
 - 修改内容：管理端角色权限页新增角色已有权限加载逻辑，选择角色时调用后端角色权限接口回显已分配权限；保存后重新加载当前角色权限，避免刚选中角色时空数组保存导致权限被误清空。
 - 注意事项：演示 RBAC 时应先确认当前管理员拥有 rbac:manage 权限；接口失败时页面会保留原状态并提示加载失败。
+[2026-06-14 22:48:00] 修复管理端登录后"无访问权限"问题
+- 修改内容：
+  1. 执行 `sql/10-full-score-iteration.sql` 初始化 RBAC 种子数据（permission、role、role_permission、user_role 表）
+  2. 修改 `10-full-score-iteration.sql` 中 user_role 分配策略：从 `WHERE username = 'admin'` 改为 `WHERE role = 'ADMIN'`，确保所有管理员用户均自动获得 SUPER_ADMIN 角色
+  3. 后端 `UserServiceImpl.enrichAdminAuth()`：若管理员权限列表为空，在登录时即抛出明确异常"管理员账号未配置任何权限，请联系超级管理员"，避免登录后所有操作返回 403
+  4. 前端 `request.ts`：修复 axios 错误拦截器中将 403 与 401 同等处理的问题，403 不再清除 token 和跳转登录页，改为显示"没有访问权限"提示
+  5. 前端 `useAuthStore.ts` 和 `Login.tsx`：登录时保存后端返回的 permissions 字段，供后续 UI 层权限控制使用
+- 注意事项：如果使用其他方式启动后端（非 IDE 直接运行），需重启应用以使后端代码修改生效；前端需重新构建后生效。

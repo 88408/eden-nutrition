@@ -125,6 +125,7 @@ CREATE TABLE `order` (
     `discount_amount` DECIMAL(10, 2) DEFAULT 0 COMMENT '优惠金额',
     `coupon_id` BIGINT COMMENT '使用的优惠券ID',
     `pay_type` TINYINT COMMENT '支付方式：1-支付宝 2-微信',
+    `payment_method` VARCHAR(50) DEFAULT NULL COMMENT '支付方式名称',
     `payment_trade_no` VARCHAR(100) DEFAULT NULL COMMENT '第三方支付交易号',
     `status` TINYINT DEFAULT 0 COMMENT '订单状态：0-待支付 1-已支付 2-已发货 3-已完成 4-已取消 5-已退款',
     `order_type` TINYINT DEFAULT 0 COMMENT '订单类型：0-普通订单 1-秒杀订单 2-团购订单',
@@ -226,10 +227,14 @@ CREATE TABLE `seckill_order` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
     `order_id` BIGINT NOT NULL COMMENT '订单ID',
+    `order_no` VARCHAR(50) DEFAULT NULL COMMENT '订单编号',
     `seckill_id` BIGINT NOT NULL COMMENT '秒杀ID',
     `product_id` BIGINT NOT NULL COMMENT '商品ID',
+    `amount` DECIMAL(10, 2) DEFAULT NULL COMMENT '秒杀金额',
+    `status` TINYINT DEFAULT 0 COMMENT '订单状态：0-未支付 1-已支付 2-已取消',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY `uk_user_seckill` (`user_id`, `seckill_id`)
+    UNIQUE KEY `uk_user_seckill` (`user_id`, `seckill_id`),
+    INDEX `idx_order_no` (`order_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='秒杀订单表';
 
 -- 秒杀商品兼容表（旧接口仍可能读取该表）

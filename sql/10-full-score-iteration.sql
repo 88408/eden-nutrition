@@ -163,7 +163,7 @@ INSERT IGNORE INTO `role_permission` (`role_id`, `permission_id`) VALUES
 (5, 9), (5, 10), (5, 11);
 
 INSERT IGNORE INTO `user_role` (`user_id`, `role_id`)
-SELECT id, 1 FROM `user` WHERE username = 'admin';
+SELECT id, 1 FROM `user` WHERE `role` = 'ADMIN';
 
 -- 为现有商品补充一组默认 SKU，保证商品详情页和后台规格管理可直接演示。
 INSERT INTO `product_sku` (`product_id`, `spec_name`, `flavor`, `package_size`, `price`, `stock`, `image_url`, `status`)

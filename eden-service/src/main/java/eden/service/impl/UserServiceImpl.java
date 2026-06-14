@@ -153,6 +153,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 为后台登录结果补充角色、权限码和菜单树，供管理端做菜单与按钮级 RBAC 控制。
+     * 若管理员未分配任何权限，直接拒绝登录并给出明确提示，避免登录后所有操作返回 403。
      */
     private void enrichAdminAuth(LoginVO loginVO, Long userId) {
         loginVO.setRoles(rbacService.getUserRoles(userId).stream()
@@ -160,6 +161,11 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList()));
         loginVO.setPermissions(rbacService.getPermissionCodes(userId));
         loginVO.setMenus(rbacService.getMenuTreeByUserId(userId));
+
+        // 检查是否有权限配置，若无则拒绝登录
+        if (loginVO.getPermissions() == null || loginVO.getPermissions().isEmpty()) {
+            throw new BusinessException("管理员账号未配置任何权限，请联系超级管理员");
+        }
     }
 
     private void incrementLoginFail(String failKey) {
