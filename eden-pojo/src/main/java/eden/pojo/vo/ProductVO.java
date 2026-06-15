@@ -29,7 +29,10 @@ public class ProductVO implements Serializable {
     /** 分类ID */
     private Long categoryId;
 
-    /** 主图URL */
+    /** 主图URL，保留给用户端小程序等历史前端字段使用。 */
+    private String mainImage;
+
+    /** 主图URL，保留给管理端或旧接口文档中的 imageUrl 字段使用。 */
     private String imageUrl;
 
     /** 商品图片列表（JSON数组） */
@@ -83,7 +86,7 @@ public class ProductVO implements Serializable {
         }
         ProductVO vo = new ProductVO();
         BeanUtils.copyProperties(product, vo);
-        // Map mainImage -> imageUrl
+        // 商品图片同时输出 mainImage 和 imageUrl，避免不同前端因字段名差异读不到同一套后端图片。
         vo.setImageUrl(product.getMainImage());
         return vo;
     }

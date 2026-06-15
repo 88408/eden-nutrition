@@ -5,6 +5,7 @@ import eden.web.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -12,9 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -50,39 +51,67 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
-            // 禁用session
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            // 允许匿名访问的接口
-            .antMatchers("/user/login", "/user/register").permitAll()
+                .csrf().disable()
+                // 商城端使用 JWT 鉴权，不依赖服务端 Session。
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                .antMatchers("/user/login", "/user/register").permitAll()
                 .antMatchers("/admin/user/login", "/admin/user/register").permitAll()
-            // 允许匿名访问订阅接口（前端订阅不需要登录）
-            // 使用更通用的匹配，兼容有无 context-path 的情况
-            .antMatchers("/subscribe", "/api/subscribe", "/**/subscribe").permitAll()
-            // 支付宝异步通知和同步返回没有用户登录态，必须通过签名验签保护
-            .antMatchers(
-                    "/order/pay/alipay/notify",
-                    "/order/pay/alipay/return",
-                    "/order/pay/alipay/bridge",
-                    "/order/pay/alipay/weapp-debug-return",
-                    "/api/order/pay/alipay/notify",
-                    "/api/order/pay/alipay/return",
-                    "/api/order/pay/alipay/bridge",
-                    "/api/order/pay/alipay/weapp-debug-return").permitAll()
-            // Swagger / Knife4j 相关
-            .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
-            // 静态资源
-            .antMatchers("/", "/*.html", "/**/*.css", "/**/*.js", "/favicon.ico").permitAll()
-            // 其他所有请求需要认证
-            .anyRequest().authenticated();
-        
-        // 添加JWT filter
+                // 订阅入口是公开表单，兼容有无 /api context-path 的访问路径。
+                .antMatchers("/subscribe", "/api/subscribe", "/**/subscribe").permitAll()
+                // 支付宝回调和调试桥接页没有用户登录态，必须通过支付宝签名或短期 token 保护。
+                .antMatchers(
+                        "/order/pay/alipay/notify",
+                        "/order/pay/alipay/return",
+                        "/order/pay/alipay/bridge",
+                        "/order/pay/alipay/weapp-debug-return",
+                        "/api/order/pay/alipay/notify",
+                        "/api/order/pay/alipay/return",
+                        "/api/order/pay/alipay/bridge",
+                        "/api/order/pay/alipay/weapp-debug-return").permitAll()
+                // Swagger / Knife4j 文档入口。
+                .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
+                // 用户端公开浏览能力只按 GET 精确放行，避免收藏、购物车、下单等写接口被匿名访问。
+                .antMatchers(HttpMethod.GET,
+                        "/product/list",
+                        "/api/product/list",
+                        "/product/*",
+                        "/api/product/*",
+                        "/product/hot",
+                        "/api/product/hot",
+                        "/product/recommend",
+                        "/api/product/recommend",
+                        "/product/new",
+                        "/api/product/new",
+                        "/product/category/*",
+                        "/api/product/category/*",
+                        "/category/tree",
+                        "/api/category/tree",
+                        "/category/first",
+                        "/api/category/first",
+                        "/category/children/*",
+                        "/api/category/children/*",
+                        "/category/*",
+                        "/api/category/*",
+                        "/seckill/sessions",
+                        "/api/seckill/sessions",
+                        "/seckill/list",
+                        "/api/seckill/list",
+                        "/seckill/ongoing",
+                        "/api/seckill/ongoing",
+                        "/seckill/upcoming",
+                        "/api/seckill/upcoming").permitAll()
+                // 商品图片由后端静态目录统一托管，用户端和管理端都需要未登录直接渲染。
+                .antMatchers("/images/**", "/api/images/**", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.webp").permitAll()
+                // 前端静态资源。
+                .antMatchers("/", "/*.html", "/**/*.css", "/**/*.js", "/favicon.ico").permitAll()
+                .anyRequest().authenticated();
+
         http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
-        // 支付宝调试桥接页需要被微信开发者工具 web-view 承载，只对这些 HTML 页面屏蔽 X-Frame-Options。
+        // 仅支付宝调试桥接页允许被微信开发者工具 web-view 承载，其他接口保留默认安全响应头。
         http.addFilterBefore(alipayWebViewFrameHeaderFilter(), HeaderWriterFilter.class);
-        
+
         return http.build();
     }
 
@@ -106,7 +135,7 @@ public class SecurityConfig {
     }
 
     /**
-     * context-path 为 /api 时 servletPath 不含 /api；保留 /api 判断用于兼容代理或测试环境直传完整路径。
+     * context-path 为 /api 时 servletPath 不含 /api；同时保留 /api 判断用于兼容代理或测试环境直传完整路径。
      */
     private boolean isAlipayWebViewDebugPage(HttpServletRequest request) {
         String servletPath = request.getServletPath();
@@ -122,7 +151,7 @@ public class SecurityConfig {
     }
 
     /**
-     * 拦截默认 HeaderWriter 写入的 X-Frame-Options，避免微信 web-view 直接白屏。
+     * 拦截默认 HeaderWriter 写入的 X-Frame-Options，避免微信 web-view 承载调试桥接页时白屏。
      */
     private static class SuppressFrameOptionsResponse extends HttpServletResponseWrapper {
         private static final String X_FRAME_OPTIONS = "X-Frame-Options";

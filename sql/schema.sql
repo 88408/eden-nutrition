@@ -354,11 +354,11 @@ INSERT INTO `category` (`id`, `name`, `parent_id`, `level`, `sort_order`) VALUES
 
 -- 插入示例商品，显式保留商品 ID，供订单明细和秒杀活动稳定引用。
 INSERT INTO `product` (`id`, `name`, `subtitle`, `category_id`, `main_image`, `sub_images`, `detail`, `original_price`, `price`, `stock`, `sales`, `status`, `is_hot`, `is_new`) VALUES
-(1, '印尼进口即食燕窝 70g*6瓶', '精选印尼金丝燕窝', 7, '/images/yanwo.jpg', '[]', '精选印尼金丝燕窝，开盖即食，方便营养', 799.00, 599.00, 100, 256, 1, 1, 0),
-(2, '长白山野山参 10年参龄 50g', '长白山原产地直供', 10, '/images/shanshen.jpg', '[]', '长白山原产地直供，10年以上参龄，品质保证', 1599.00, 1299.00, 50, 128, 1, 1, 0),
-(3, '东阿阿胶块 250g 礼盒装', '国家非物质文化遗产', 3, '/images/ejiao.jpg', '[]', '国家非物质文化遗产，正宗东阿阿胶', 999.00, 899.00, 200, 512, 1, 1, 0),
-(4, '破壁灵芝孢子粉 1g*60袋', '高破壁率，易吸收', 4, '/images/lingzhi.jpg', '[]', '高破壁率，易吸收，增强免疫力', 499.00, 399.00, 150, 320, 1, 0, 0),
-(5, '宁夏枸杞王 特级 500g', '宁夏中宁原产地', 5, '/images/gouqi.jpg', '[]', '宁夏中宁原产地，颗粒饱满，天然晾晒', 168.00, 128.00, 300, 890, 1, 1, 0);
+(1, '印尼进口即食燕窝 70g*6瓶', '精选印尼金丝燕窝', 7, '/api/images/products/bird-nest.png', '["/api/images/products/bird-nest.png"]', '精选印尼金丝燕窝，开盖即食，方便营养', 799.00, 599.00, 100, 256, 1, 1, 0),
+(2, '长白山野山参 10年参龄 50g', '长白山原产地直供', 10, '/api/images/products/ginseng.png', '["/api/images/products/ginseng.png"]', '长白山原产地直供，10年以上参龄，品质保证', 1599.00, 1299.00, 50, 128, 1, 1, 0),
+(3, '东阿阿胶块 250g 礼盒装', '国家非物质文化遗产', 3, '/api/images/products/ejiao.png', '["/api/images/products/ejiao.png"]', '国家非物质文化遗产，正宗东阿阿胶', 999.00, 899.00, 200, 512, 1, 1, 0),
+(4, '破壁灵芝孢子粉 1g*60袋', '高破壁率，易吸收', 4, '/api/images/products/herbal.png', '["/api/images/products/herbal.png"]', '高破壁率，易吸收，增强免疫力', 499.00, 399.00, 150, 320, 1, 0, 0),
+(5, '宁夏枸杞王 特级 500g', '宁夏中宁原产地', 5, '/api/images/products/vitamin.png', '["/api/images/products/vitamin.png"]', '宁夏中宁原产地，颗粒饱满，天然晾晒', 168.00, 128.00, 300, 890, 1, 1, 0);
 
 -- 插入示例优惠券
 INSERT INTO `coupon` (`id`, `name`, `type`, `value`, `min_amount`, `total_count`, `remain_count`, `start_time`, `end_time`) VALUES

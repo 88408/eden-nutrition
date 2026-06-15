@@ -712,6 +712,10 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItem item : items) {
                 eden.pojo.vo.OrderItemVO itemVO = new eden.pojo.vo.OrderItemVO();
                 org.springframework.beans.BeanUtils.copyProperties(item, itemVO);
+                // 字段名不匹配，手动映射
+                itemVO.setProductPrice(item.getPrice());
+                itemVO.setTotalAmount(item.getTotalPrice());
+                itemVO.setProductPic(item.getProductImage());
                 itemVOs.add(itemVO);
             }
         }

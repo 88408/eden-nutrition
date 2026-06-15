@@ -6,11 +6,15 @@ import eden.common.result.Result;
 import eden.pojo.dto.ReportQueryDTO;
 import eden.pojo.vo.ReportMetricVO;
 import eden.service.ReportService;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -47,7 +51,9 @@ public class AdminReportController {
     }
 
     @GetMapping("/export")
-    public Result<String> export(ReportQueryDTO query) {
-        return Result.success(reportService.exportCsv(query));
+    public void export(ReportQueryDTO query, HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv; charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + URLEncoder.encode("报表导出.csv", StandardCharsets.UTF_8));
+        reportService.exportCsv(query, response.getOutputStream());
     }
 }

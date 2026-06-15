@@ -7,9 +7,9 @@ import eden.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -47,13 +47,19 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public String exportCsv(ReportQueryDTO query) {
+    public void exportCsv(ReportQueryDTO query, OutputStream out) {
         normalize(query);
-        StringBuilder csv = new StringBuilder("类型,名称,销售额,订单数,销量,退款额,客单价\n");
+        StringBuilder csv = new StringBuilder("﻿"); // UTF-8 BOM，Excel 识别编码
+        csv.append("类型,名称,销售额,订单数,销量,退款额,客单价\n");
         appendRows(csv, "分类销售", reportMapper.selectSalesByCategory(query));
         appendRows(csv, "销售趋势", reportMapper.selectSalesTrend(query));
         appendRows(csv, "热销商品", reportMapper.selectTopProducts(query));
-        return Base64.getEncoder().encodeToString(csv.toString().getBytes(StandardCharsets.UTF_8));
+        try {
+            out.write(csv.toString().getBytes(StandardCharsets.UTF_8));
+            out.flush();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("CSV 导出写入失败", e);
+        }
     }
 
     private void appendRows(StringBuilder csv, String type, List<ReportMetricVO> rows) {

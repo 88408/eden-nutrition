@@ -3,6 +3,7 @@ package eden.service;
 import eden.pojo.dto.ReportQueryDTO;
 import eden.pojo.vo.ReportMetricVO;
 
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -18,5 +19,5 @@ public interface ReportService {
 
     List<ReportMetricVO> topProducts(ReportQueryDTO query);
 
-    String exportCsv(ReportQueryDTO query);
+    void exportCsv(ReportQueryDTO query, OutputStream out);
 }

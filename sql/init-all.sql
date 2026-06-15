@@ -35,5 +35,6 @@
 -- docker exec -i eden-mysql mysql -u root -prootpass < sql/08-user-experience.sql
 -- docker exec -i eden-mysql mysql -u root -prootpass < sql/09-runtime-compat.sql
 -- docker exec -i eden-mysql mysql -u root -prootpass < sql/10-full-score-iteration.sql
+-- docker exec -i eden-mysql mysql -u root -prootpass < sql/11-product-images.sql
 
 -- 已有运行库升级时，优先执行 09-runtime-compat.sql 和 10-full-score-iteration.sql；这些脚本只补字段、索引、缺失表和演示种子数据，不会清空现有数据。
